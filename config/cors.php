@@ -4,31 +4,55 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Cross-Origin Resource Sharing (CORS) Configuration
+    | CORS Configuration (Cross-Origin Resource Sharing)
     |--------------------------------------------------------------------------
-    |
-    | Here you may configure your settings for cross-origin resource sharing
-    | or "CORS". This determines what cross-origin operations may execute
-    | in web browsers. You are free to adjust these settings as needed.
-    |
-    | To learn more: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
-    |
+    | Configure les règles d'accès entre votre backend et les clients externes.
+    |--------------------------------------------------------------------------
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    // Routes concernées par CORS
+    'paths' => [
+        'api/*',
+        'sanctum/csrf-cookie',
+    ],
 
-    'allowed_methods' => ['*'],
+    // Méthodes HTTP autorisées
+    'allowed_methods' => [
+        'GET',
+        'POST',
+        'PUT',
+        'PATCH',
+        'DELETE',
+        'OPTIONS',
+    ],
 
-    'allowed_origins' => ['*'],
+    // Origines autorisées (à adapter selon votre frontend)
+    // Origines autorisées dynamiquement via .env (CORS_ALLOWED_ORIGINS)
+    'allowed_origins' => explode(',', env('CORS_ALLOWED_ORIGINS', '*')),
 
+    // Expressions régulières pour les origines (laisser vide si non utilisé)
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['*'],
+    // Headers autorisés dans les requêtes
+    'allowed_headers' => [
+        'Content-Type',
+        'X-Requested-With',
+        'Authorization',
+        'Accept',
+        'Origin',
+        'X-CSRF-Token',
+    ],
 
-    'exposed_headers' => [],
+    // Headers exposés au navigateur
+    'exposed_headers' => [
+        'Authorization',
+        'Content-Type',
+    ],
 
-    'max_age' => 0,
+    // Durée de mise en cache du pré-vol (en secondes)
+    'max_age' => 3600, // 1 heure
 
-    'supports_credentials' => false,
+    // Autorise l'envoi de cookies/tokens (utile pour authentification)
+    'supports_credentials' => true,
 
 ];

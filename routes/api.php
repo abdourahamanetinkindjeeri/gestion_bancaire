@@ -2,6 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CompteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +16,38 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+
+
+Route::group(['prefix' => 'v1'], function () {
+    Route::apiResource('/comptes', CompteController::class)->only(['index', 'store']);
+    Route::get('comptes/non-archives', [CompteController::class, 'getComptesNotArchived'])
+        ->name('comptes.non_archives');
+});
+
+
+// Routes d'authentification Passport
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
+
+// Routes protégées
+Route::middleware('auth:api')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+
+    // Routes pour les admins
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/admin/dashboard', function () {
+            return response()->json(['message' => 'Bienvenue Admin']);
+        });
+        // Autres routes admin
+    });
+
+    // Routes pour les clients
+    Route::middleware('role:client')->group(function () {
+        Route::get('/client/dashboard', function () {
+            return response()->json(['message' => 'Bienvenue Client']);
+        });
+        // Autres routes client
+    });
 });
