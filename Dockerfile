@@ -15,10 +15,10 @@ WORKDIR /var/www
 # Copier uniquement les fichiers nécessaires pour l’installation
 COPY composer.json composer.lock ./
 
-# Installer les dépendances PHP sans dev
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+# Installer les dépendances PHP (sans dev, lock à jour)
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Copier uniquement les fichiers essentiels
+# Copier le code de l'application
 COPY app/ app/
 COPY routes/ routes/
 COPY config/ config/
@@ -29,15 +29,14 @@ COPY bootstrap/ bootstrap/
 COPY artisan ./
 COPY .env.example .env
 
-# Publier la doc Swagger
-RUN php artisan vendor:publish --provider="L5Swagger\\L5SwaggerServiceProvider" --tag=swagger-ui --force \
- && php artisan vendor:publish --provider="L5Swagger\\L5SwaggerServiceProvider" --tag=config --force \
- && php artisan vendor:publish --provider="L5Swagger\\L5SwaggerServiceProvider" --tag=views --force \
- && php artisan l5-swagger:generate
+# Publier L5Swagger (ignore erreur si namespace non trouvé)
+RUN php artisan vendor:publish --provider="L5Swagger\\L5SwaggerServiceProvider" --tag=swagger-ui --force || true \
+ && php artisan vendor:publish --provider="L5Swagger\\L5SwaggerServiceProvider" --tag=config --force || true \
+ && php artisan vendor:publish --provider="L5Swagger\\L5SwaggerServiceProvider" --tag=views --force || true \
+ && php artisan l5-swagger:generate || echo "Swagger generation skipped"
 
 # Builder les assets front
-RUN npm install && npm run build \
- && rm -rf node_modules
+RUN npm install && npm run build && rm -rf node_modules
 
 # Donner les droits aux répertoires nécessaires
 RUN mkdir -p storage bootstrap/cache \
@@ -48,13 +47,14 @@ RUN mkdir -p storage bootstrap/cache \
 FROM php:8.3-fpm
 
 # Installer uniquement les dépendances runtime
-RUN apt-get update && apt-get install -y libpng-dev libonig-dev libxml2-dev libzip-dev libpq-dev \
+RUN apt-get update && apt-get install -y \
+    libpng-dev libonig-dev libxml2-dev libzip-dev libpq-dev \
     && docker-php-ext-install pdo pdo_pgsql mbstring bcmath gd zip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /var/www
 
-# Copier uniquement ce qui est nécessaire depuis le builder
+# Copier l'application depuis le builder
 COPY --from=builder /var/www /var/www
 
 # Variables d’environnement
