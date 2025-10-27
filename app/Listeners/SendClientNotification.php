@@ -51,6 +51,7 @@ class SendClientNotification implements ShouldQueue
             Log::info("Email de création de compte envoyé à {$client->email} pour le compte {$compte->numero_compte}");
         } catch (\Throwable $e) {
             Log::error("Erreur lors de l'envoi de l'email de création de compte : " . $e->getMessage());
+            // Ne pas relancer l'exception pour éviter de casser la création du compte
         }
     }
 }

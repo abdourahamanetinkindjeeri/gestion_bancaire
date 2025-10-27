@@ -22,6 +22,8 @@ class CompteService extends BaseService
         $this->clientRepository = $clientRepository;
     }
 
+
+
     /**
      * Récupère tous les comptes non archivés
      *

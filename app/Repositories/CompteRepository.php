@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Compte;
+use Illuminate\Support\Facades\DB;
 
 class CompteRepository extends BaseRepository
 {
@@ -13,5 +14,9 @@ class CompteRepository extends BaseRepository
     {
         parent::__construct($model);
     }
+
+
+
+
 
 }

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CompteStoreRequest;
 use App\Http\Resources\CompteResource;
+use App\Http\Resources\CompteResourceCollection;
+use App\Services\ClientService;
 use App\Services\CompteService;
 use Illuminate\Http\Request;
 use App\Traits\ApiResponser;
@@ -35,10 +37,12 @@ class CompteController extends Controller
     use ApiResponser;
 
     protected CompteService $compteService;
+    protected ClientService $clientService;
 
-    public function __construct(CompteService $compteService)
+    public function __construct(CompteService $compteService, ClientService $clientService)
     {
         $this->compteService = $compteService;
+        $this->clientService = $clientService;
     }
 
     /**
@@ -82,7 +86,9 @@ class CompteController extends Controller
         $comptes = $this->compteService->getAll($filters, $page, $limit);
 
         return $this->successResponse(
-            CompteResource::collection($comptes),
+            collect($comptes->items())->map(function ($compte) {
+                return new CompteResource($compte, $this->clientService);
+            }),
             "Liste des comptes récupérée avec succès"
         );
     }
@@ -127,7 +133,12 @@ class CompteController extends Controller
 
         $comptes = $this->compteService->getAllNonArchived($filters, $page, $limit);
 
-        return $this->successResponse($comptes, "Liste des comptes non archives récupérée avec succès");
+        return $this->successResponse(
+            collect($comptes->items())->map(function ($compte) {
+                return new CompteResource($compte, $this->clientService);
+            }),
+            "Liste des comptes non archives récupérée avec succès"
+        );
     }
 
     /**
@@ -187,23 +198,10 @@ class CompteController extends Controller
                 "Compte créé avec succès",
                 Response::HTTP_CREATED
             );
-        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
-            // Gestion spécifique des violations de contrainte unique
-            if (str_contains($e->getMessage(), 'clients_nci_unique')) {
-                return $this->errorResponse(
-                    "Un client avec ce numéro NCI existe déjà",
-                    422
-                );
-            }
-
+        } catch (\Throwable $e) {
             return $this->errorResponse(
                 "Erreur lors de la création du compte",
                 422
-            );
-        } catch (\Throwable $e) {
-            return $this->errorResponse(
-                "Une erreur inattendue s'est produite",
-                500
             );
         }
     }
@@ -252,7 +250,7 @@ class CompteController extends Controller
         }
 
         return $this->successResponse(
-            new \App\Http\Resources\CompteResource($compte),
+            new CompteResource($compte, $this->clientService),
             "Compte récupéré avec succès"
         );
     }
