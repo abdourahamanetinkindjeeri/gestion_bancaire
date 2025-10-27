@@ -40,6 +40,7 @@ if [ -d resources/views/vendor/l5-swagger ]; then
     php artisan l5-swagger:generate
 fi
 
-# Lancer le serveur Laravel
-echo "🚀 Lancement du serveur Laravel..."
-exec php artisan serve --host=0.0.0.0 --port=8000
+# Lancer le serveur Laravel sur le port fourni par Render ou 8000 par défaut
+PORT_TO_USE=${PORT:-8000}
+echo "🚀 Lancement du serveur Laravel sur le port $PORT_TO_USE..."
+exec php artisan serve --host=0.0.0.0 --port=$PORT_TO_USE
