@@ -5,9 +5,9 @@
     <title>{{ config('l5-swagger.documentations.' . $documentation . '.api.title') }}</title>
 
     {{-- ✅ Assets Swagger sécurisés --}}
-    <link rel="stylesheet" href="{{ asset('vendor/swagger-ui/swagger-ui.css') }}">
-    <link rel="icon" href="{{ asset('vendor/swagger-ui/favicon-32x32.png') }}" sizes="32x32"/>
-    <link rel="icon" href="{{ asset('vendor/swagger-ui/favicon-16x16.png') }}" sizes="16x16"/>
+    <link rel="stylesheet" href="{{ l5_swagger_asset($documentation, 'swagger-ui.css') }}">
+    <link rel="icon" href="{{ l5_swagger_asset($documentation, 'favicon-32x32.png') }}" sizes="32x32"/>
+    <link rel="icon" href="{{ l5_swagger_asset($documentation, 'favicon-16x16.png') }}" sizes="16x16"/>
 
     {{-- ✅ Styles de base --}}
     <style>
@@ -30,8 +30,8 @@
     <div id="swagger-ui"></div>
 
     {{-- ✅ Scripts Swagger sécurisés --}}
-    <script src="{{ asset('vendor/swagger-ui/swagger-ui-bundle.js') }}"></script>
-    <script src="{{ asset('vendor/swagger-ui/swagger-ui-standalone-preset.js') }}"></script>
+    <script src="{{ l5_swagger_asset($documentation, 'swagger-ui-bundle.js') }}"></script>
+    <script src="{{ l5_swagger_asset($documentation, 'swagger-ui-standalone-preset.js') }}"></script>
 
     <script>
         window.onload = function() {

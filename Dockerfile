@@ -24,9 +24,7 @@ RUN composer install --no-dev --optimize-autoloader
 
 # Publier et générer la doc Swagger
 RUN php artisan vendor:publish --provider="L5Swagger\L5SwaggerServiceProvider" --force \
-    && php artisan l5-swagger:generate \
-    && mkdir -p public/vendor/swagger-ui \
-    && cp -r vendor/swagger-api/swagger-ui/dist/* public/vendor/swagger-ui/
+    && php artisan l5-swagger:generate
 
 # Installer les dépendances JS et builder le front
 RUN npm install && npm run build

@@ -38,13 +38,6 @@ php artisan migrate --force
 if [ -d resources/views/vendor/l5-swagger ]; then
     echo "📄 Génération de la documentation Swagger..."
     php artisan l5-swagger:generate
-
-    # Copier les assets Swagger si nécessaire
-    if [ ! -d public/vendor/swagger-ui ]; then
-        echo "📄 Copie des assets Swagger..."
-        mkdir -p public/vendor/swagger-ui
-        cp -r vendor/swagger-api/swagger-ui/dist/* public/vendor/swagger-ui/
-    fi
 fi
 
 # Lancer le serveur Laravel
