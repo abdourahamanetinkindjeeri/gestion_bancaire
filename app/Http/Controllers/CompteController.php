@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
  * )
  *
  * @OA\Server(
- * url="https://jeeri.onrender.com/tinkin",
+ * url="https://tinkin-jeeri.onrender.com/tinkin",
  * description="Serveur de production"
  * )
  * @OA\Server(
@@ -181,11 +181,11 @@ class CompteController extends Controller
 
         $compte = $this->compteService->createCompte($validatedData);
 
-//        return $this->successResponse(
-//            $compte->load('client'),
-//            "Compte créé avec succès",
-//            201
-//        );
+        //        return $this->successResponse(
+        //            $compte->load('client'),
+        //            "Compte créé avec succès",
+        //            201
+        //        );
 
         return $this->successResponse(
             $compte->load('client'),
@@ -242,7 +242,4 @@ class CompteController extends Controller
             "Compte récupéré avec succès"
         );
     }
-
-
-
 }
