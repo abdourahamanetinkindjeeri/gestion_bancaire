@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: jeeri-api
+    runtime: docker
+    repo: https://github.com/abdourahamanetinkindjeeri/gestion_bancaire
+    branch: production
+    dockerfilePath: Dockerfile
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /api/documentation
+
+    envVars:
+      # Laravel
+      - key: APP_ENV
+        value: "production"
+      - key: APP_DEBUG
+        value: "false"
+
+      # Domaine principal de Swagger
+      - key: L5_SWAGGER_CONST_HOST
+        value: "jeeri.onrender.com"
+      - key: L5_SWAGGER_CONST_SCHEME
+        value: "https"
+      - key: L5_FORMAT_TO_USE_FOR_DOCS
+        value: "json"
+
+      # Configuration pour la génération automatique des docs
+      - key: L5_SWAGGER_GENERATE_ALWAYS
+        value: "true"
+      - key: L5_SWAGGER_GENERATE_YAML_COPY
+        value: "false"
