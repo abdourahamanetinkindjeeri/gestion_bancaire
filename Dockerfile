@@ -45,6 +45,11 @@ RUN mkdir -p storage/framework/{sessions,views,cache} bootstrap/cache storage/ap
 # -----------------------------
 FROM php:8.3-fpm
 
+# Installer les dépendances système nécessaires pour les extensions PHP
+RUN apt-get update && apt-get install -y \
+    libpng-dev libonig-dev libxml2-dev libzip-dev libpq-dev zip unzip git curl npm \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 # Copier PHP extensions et configs depuis builder
 COPY --from=builder /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
 COPY --from=builder /usr/local/etc/php/conf.d /usr/local/etc/php/conf.d
