@@ -17,7 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
  * )
  *
  * @OA\Server(
- * url="https://tinkin-jeeri.onrender.com/tinkin",
+ * url="https://jeeri.onrender.com/tinkin",
  * description="Serveur de production"
  * )
  * @OA\Server(
@@ -27,7 +27,7 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * @OA\Tag(
  *     name="Comptes",
- *     description="Gestion des comptes bancaires"
+ *     description="Gestion des comptes bancaires et de leurs transactions"
  * )
  */
 class CompteController extends Controller
