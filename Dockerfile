@@ -34,6 +34,13 @@ RUN php artisan config:clear \
     && php artisan route:clear \
     && php artisan view:clear
 
+# Télécharger et copier les assets Swagger UI (version 5.11.0)
+RUN curl -L -o /tmp/swagger-ui.zip https://github.com/swagger-api/swagger-ui/archive/refs/tags/v5.11.0.zip \
+    && unzip /tmp/swagger-ui.zip -d /tmp \
+    && mkdir -p public/vendor/swagger-api/swagger-ui/dist \
+    && cp -r /tmp/swagger-ui-5.11.0/dist/* public/vendor/swagger-api/swagger-ui/dist/ \
+    && rm -rf /tmp/swagger-ui*
+
 # -----------------------------
 # Stage 2: Runtime
 # -----------------------------
