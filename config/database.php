@@ -95,11 +95,11 @@ return [
 
         'neon' => [
             'driver' => 'pgsql',
-            'host' => env('NEON_DB_HOST'),
-            'port' => env('NEON_DB_PORT'),
-            'database' => env('NEON_DB_DATABASE'),
-            'username' => env('NEON_DB_USERNAME'),
-            'password' => env('NEON_DB_PASSWORD'),
+            'host' => env('NEON_DB_HOST', 'ep-dark-feather-ah38xbf7-pooler.c-3.us-east-1.aws.neon.tech'),
+            'port' => env('NEON_DB_PORT', '5432'),
+            'database' => env('NEON_DB_DATABASE', 'banking_archived'),
+            'username' => env('NEON_DB_USERNAME', 'neondb_owner'),
+            'password' => env('NEON_DB_PASSWORD', 'npg_92MdGeigxFop'),
             'charset' => 'utf8',
             'prefix' => '',
             'schema' => 'public',

@@ -19,7 +19,7 @@ use App\Http\Controllers\CompteController;
 
 
 Route::group(['prefix' => 'v1'], function () {
-    Route::apiResource('/comptes', CompteController::class)->only(['index', 'store']);
+    Route::apiResource('/comptes', CompteController::class)->only(['index', 'store', 'show']);
     Route::get('comptes/non-archives', [CompteController::class, 'getComptesNotArchived'])
         ->name('comptes.non_archives');
 });

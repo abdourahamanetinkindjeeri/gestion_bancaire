@@ -18,14 +18,22 @@ abstract class BaseService
     {
         $this->repository = $repository;
     }
+/**
+ * Récupère toutes les ressources avec pagination, filtres et tri.
+ */
+public function getAll(array $filters = [], int $page = 1, int $limit = 10): LengthAwarePaginator
+{
+    return $this->repository->all($filters, $page, $limit);
+}
 
-    /**
-     * Récupère toutes les ressources avec pagination, filtres et tri.
-     */
-    public function getAll(array $filters = [], int $page = 1, int $limit = 10): LengthAwarePaginator
-    {
-        return $this->repository->all($filters, $page, $limit);
-    }
+/**
+ * Récupère une ressource par son ID.
+ */
+public function getById(int|string $id): ?Model
+{
+    return $this->repository->find($id);
+}
 
-    
+
+
 }

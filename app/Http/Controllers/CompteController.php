@@ -45,7 +45,7 @@ class CompteController extends Controller
      * Liste paginée des comptes
      *
      * @OA\Get(
-     *     path="/v1/comptesx",
+     *     path="/v1/comptes",
      *     tags={"Comptes"},
      *     summary="Liste paginée des comptes",
      *     description="Récupère une liste paginée de tous les comptes avec possibilité de filtrage",
