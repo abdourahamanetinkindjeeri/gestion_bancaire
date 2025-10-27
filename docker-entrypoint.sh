@@ -1,46 +1,54 @@
 #!/bin/sh
+set -e  # Arrête le script en cas d'erreur
 
-set -e  # Stop on first error
+echo "🚀 Initialisation du conteneur Laravel..."
 
 # Vérifie que .env existe
 if [ ! -f .env ]; then
   echo "⚠️ Aucun fichier .env trouvé. Laravel risque de planter."
 fi
 
-# Assurer les bonnes permissions sur storage et bootstrap/cache
+# Création des dossiers nécessaires
 echo "🔧 Vérification des permissions..."
 mkdir -p storage/framework/{sessions,views,cache} bootstrap/cache storage/api-docs
 chown -R www-data:www-data storage bootstrap/cache
 chmod -R 775 storage bootstrap/cache
 
 # Générer la clé Laravel si non définie
-if [ -z "$(php artisan key:generate --show 2>/dev/null)" ]; then
+if ! php artisan key:generate --show >/dev/null 2>&1; then
     echo "🔑 Génération de la clé Laravel..."
     php artisan key:generate --force
 else
     echo "🔑 Clé Laravel déjà définie."
 fi
 
-# Nettoyer et préparer caches
-echo "⚙️ Nettoyage et cache..."
-php artisan config:clear
-php artisan route:clear
-php artisan view:clear
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+# Nettoyer et mettre en cache
+echo "⚙️ Nettoyage et optimisation..."
+php artisan config:clear || true
+php artisan route:clear || true
+php artisan view:clear || true
+php artisan optimize || true
+php artisan config:cache || true
+php artisan route:cache || true
+php artisan view:cache || true
 
-# Exécuter migrations en production
+# Exécution des migrations
 echo "📦 Exécution des migrations..."
-php artisan migrate --force
+php artisan migrate --force || true
 
-# Générer Swagger si nécessaire
-if [ -d resources/views/vendor/l5-swagger ]; then
+# Génération Swagger si le package est installé
+if php artisan | grep -q l5-swagger; then
     echo "📄 Génération de la documentation Swagger..."
-    php artisan l5-swagger:generate
+    php artisan l5-swagger:generate || true
+else
+    echo "⚠️ Swagger non installé, étape ignorée."
 fi
 
-# Lancer le serveur Laravel sur le port fourni par Render ou 8000 par défaut
+# Définir le port (Render fournit PORT automatiquement)
 PORT_TO_USE=${PORT:-8000}
-echo "🚀 Lancement du serveur Laravel sur le port $PORT_TO_USE..."
-exec php artisan serve --host=0.0.0.0 --port=$PORT_TO_USE
+
+echo "✅ Préparation terminée !"
+echo "🌐 Lancement du serveur PHP-FPM sur le port $PORT_TO_USE..."
+
+# Lancer PHP-FPM (production)
+exec php-fpm

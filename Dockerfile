@@ -1,11 +1,11 @@
 # -----------------------------
-# Stage 1: Builder
+# Étape 1 : Builder PHP
 # -----------------------------
 FROM php:8.3-fpm AS builder
 
-# Installer dépendances système et extensions PHP nécessaires pour composer, build et Swagger
+# Installer dépendances système et extensions PHP
 RUN apt-get update && apt-get install -y \
-        git curl zip unzip libpng-dev libonig-dev libxml2-dev libzip-dev libpq-dev npm \
+    libpng-dev libonig-dev libxml2-dev libzip-dev libpq-dev zip unzip git curl npm \
     && docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd zip opcache \
     && pecl install redis && docker-php-ext-enable redis \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -13,60 +13,51 @@ RUN apt-get update && apt-get install -y \
 # Installer Composer
 COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
 
-# Définir le répertoire de travail
 WORKDIR /var/www
 
-# Copier les fichiers source
+# Copier le code source
 COPY . .
 
-# Installer les dépendances PHP
-RUN composer install --no-dev --optimize-autoloader
+# Installer dépendances PHP (prod uniquement)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-# Publier et générer la doc Swagger
-RUN php artisan vendor:publish --provider="L5Swagger\L5SwaggerServiceProvider" --force \
-    && php artisan l5-swagger:generate
+# Publier les assets et config Swagger (forcés)
+RUN php artisan vendor:publish --provider="L5Swagger\\L5SwaggerServiceProvider" --tag=swagger-ui --force \
+ && php artisan vendor:publish --provider="L5Swagger\\L5SwaggerServiceProvider" --tag=config --force \
+ && php artisan vendor:publish --provider="L5Swagger\\L5SwaggerServiceProvider" --tag=views --force
 
-# Installer les dépendances JS et builder le front
+# Générer la documentation Swagger
+RUN php artisan l5-swagger:generate || true
+
+# Construire le front
 RUN npm install && npm run build
 
-# Nettoyer caches Laravel
-RUN php artisan config:clear \
-    && php artisan route:clear \
-    && php artisan view:clear
+# Préparer les dossiers Laravel
+RUN mkdir -p storage/framework/{sessions,views,cache} bootstrap/cache storage/api-docs \
+ && chown -R www-data:www-data storage bootstrap/cache \
+ && chmod -R 775 storage bootstrap/cache
 
-# Télécharger et copier les assets Swagger UI (version 5.11.0)
-RUN curl -L -o /tmp/swagger-ui.zip https://github.com/swagger-api/swagger-ui/archive/refs/tags/v5.11.0.zip \
-    && unzip /tmp/swagger-ui.zip -d /tmp \
-    && mkdir -p public/vendor/swagger-api/swagger-ui/dist \
-    && cp -r /tmp/swagger-ui-5.11.0/dist/* public/vendor/swagger-api/swagger-ui/dist/ \
-    && rm -rf /tmp/swagger-ui*
+# Ne pas générer la clé ici ! (Elle sera générée au runtime)
+# RUN php artisan key:generate --force
 
 # -----------------------------
-# Stage 2: Runtime
+# Étape 2 : Runtime final
 # -----------------------------
 FROM php:8.3-fpm
 
+# Copier PHP extensions et configs depuis builder
+COPY --from=builder /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
+COPY --from=builder /usr/local/etc/php/conf.d /usr/local/etc/php/conf.d
+
+# Copier le code Laravel
 WORKDIR /var/www
+COPY --from=builder /var/www .
 
-# Installer extensions PHP runtime
-RUN apt-get update && apt-get install -y libpq-dev \
-    && docker-php-ext-install pdo pdo_pgsql \
-    && pecl install redis && docker-php-ext-enable redis \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Changer les permissions
+RUN chown -R www-data:www-data /var/www \
+ && chmod -R 775 storage bootstrap/cache
 
-# Copier l’application construite depuis le builder
-COPY --from=builder /var/www /var/www
-
-# Copier le script d’entrée
-COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-
-# Préparer storage et bootstrap/cache avec bonnes permissions
-RUN mkdir -p storage/framework/{sessions,views,cache} bootstrap/cache storage/api-docs \
-    && chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
-
-# Variables d'environnement (peuvent aussi être définies via Render)
+# Variables d’environnement
 ENV APP_ENV=production \
     APP_DEBUG=false \
     APP_URL=https://jeeri.onrender.com
@@ -75,4 +66,7 @@ ENV APP_ENV=production \
 EXPOSE 8000
 
 # Entrypoint
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 ENTRYPOINT ["docker-entrypoint.sh"]
