@@ -8,7 +8,11 @@
     "servers": [
         {
             "url": "https://jeeri.onrender.com/tinkin",
-            "description": "Serveur de développement"
+            "description": "Serveur de production"
+        },
+        {
+            "url": "http://localhost:8000/tinkin",
+            "description": "Serveur local"
         },
         {
             "url": "/api/v1"
@@ -114,6 +118,136 @@
                                         },
                                         "pagination": {
                                             "$ref": "#/components/schemas/Pagination"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Créer un nouveau compte",
+                "description": "Crée un nouveau compte bancaire avec un client. Si le client n'existe pas, il est créé automatiquement.",
+                "operationId": "35583737300f081da80860285b3c6055",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "type",
+                                    "soldeInitial",
+                                    "devise",
+                                    "client"
+                                ],
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "cheque",
+                                            "epargne"
+                                        ],
+                                        "example": "cheque"
+                                    },
+                                    "soldeInitial": {
+                                        "type": "number",
+                                        "minimum": 10000,
+                                        "example": 50000
+                                    },
+                                    "devise": {
+                                        "type": "string",
+                                        "example": "FCFA"
+                                    },
+                                    "client": {
+                                        "properties": {
+                                            "titulaire": {
+                                                "type": "string",
+                                                "example": "John Doe"
+                                            },
+                                            "nci": {
+                                                "description": "Numéro NCI de 13 chiffres commençant par 1 ou 2",
+                                                "type": "string",
+                                                "example": "1123456789"
+                                            },
+                                            "telephone": {
+                                                "description": "Numéro téléphone sénégalais",
+                                                "type": "string",
+                                                "example": "771234567"
+                                            },
+                                            "email": {
+                                                "type": "string",
+                                                "format": "email",
+                                                "example": "john.doe@example.com"
+                                            },
+                                            "adresse": {
+                                                "type": "string",
+                                                "example": "Dakar, Sénégal"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Compte créé avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "http_code": {
+                                            "type": "integer",
+                                            "example": 201
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte créé avec succès"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "metadata": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreur de validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "http_code": {
+                                            "type": "integer",
+                                            "example": 422
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Les données fournies ne sont pas valides"
+                                        },
+                                        "errors": {
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
