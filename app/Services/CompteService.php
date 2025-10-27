@@ -8,6 +8,7 @@ use App\Repositories\ClientRepository;
 use App\Repositories\CompteRepository;
 use App\Models\Client;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 
@@ -15,7 +16,7 @@ class CompteService extends BaseService
 {
     protected ClientRepository $clientRepository;
 
-    public function __construct(CompteRepository $repository, ClientRepository $clientRepository)
+    public function __construct(CompteRepository $repository, ClientRepository $clientRepository, )
     {
         parent::__construct($repository);
         $this->clientRepository = $clientRepository;
@@ -53,16 +54,23 @@ class CompteService extends BaseService
     public function createCompte(array $data)
     {
         return DB::transaction(function () use ($data) {
-            // Vérifier si le client existe
-            $client = $this->findOrCreateClient($data['client']);
+            try {
+                // Vérifier si le client existe
+                $client = $this->findOrCreateClient($data['client']);
 
-            // Créer le compte
-            $compte = $this->createCompteForClient($client, $data);
+                // Créer le compte
+                $compte = $this->createCompteForClient($client, $data);
 
-            // Déclencher l'événement
-            event(new CompteCreated($compte));
+                // Déclencher l'événement
+                event(new CompteCreated($compte));
 
-            return $compte;
+                Log::info("Compte créé avec succès: {$compte->numero_compte} pour le client {$client->email}");
+
+                return $compte;
+            } catch (\Throwable $e) {
+                Log::error("Erreur lors de la création du compte: " . $e->getMessage());
+                throw $e;
+            }
         });
     }
 

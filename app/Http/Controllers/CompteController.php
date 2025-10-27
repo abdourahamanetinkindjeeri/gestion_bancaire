@@ -144,10 +144,10 @@ class CompteController extends Controller
      *             @OA\Property(property="soldeInitial", type="number", minimum=10000, example=50000),
      *             @OA\Property(property="devise", type="string", example="FCFA"),
      *             @OA\Property(property="client", type="object",
-     *                 @OA\Property(property="titulaire", type="string", example="John Doe"),
-     *                 @OA\Property(property="nci", type="string", example="1123456789", description="Numéro NCI de 13 chiffres commençant par 1 ou 2"),
-     *                 @OA\Property(property="telephone", type="string", example="771234567", description="Numéro téléphone sénégalais"),
-     *                 @OA\Property(property="email", type="string", format="email", example="john.doe@example.com"),
+     *                 @OA\Property(property="titulaire", type="string", example="Festo BA"),
+     *                 @OA\Property(property="nci", type="string", example="1234567890987", description="Numéro NCI de 13 chiffres commençant par 1 ou 2"),
+     *                 @OA\Property(property="telephone", type="string", example="781465554", description="Numéro téléphone sénégalais"),
+     *                 @OA\Property(property="email", type="string", format="email", example="festobah@gmail.com"),
      *                 @OA\Property(property="adresse", type="string", example="Dakar, Sénégal")
      *             )
      *         )
@@ -177,21 +177,35 @@ class CompteController extends Controller
      */
     public function store(CompteStoreRequest $request)
     {
-        $validatedData = $request->validated();
+        try {
+            $validatedData = $request->validated();
 
-        $compte = $this->compteService->createCompte($validatedData);
+            $compte = $this->compteService->createCompte($validatedData);
 
-        //        return $this->successResponse(
-        //            $compte->load('client'),
-        //            "Compte créé avec succès",
-        //            201
-        //        );
+            return $this->successResponse(
+                $compte->load('client'),
+                "Compte créé avec succès",
+                Response::HTTP_CREATED
+            );
+        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            // Gestion spécifique des violations de contrainte unique
+            if (str_contains($e->getMessage(), 'clients_nci_unique')) {
+                return $this->errorResponse(
+                    "Un client avec ce numéro NCI existe déjà",
+                    422
+                );
+            }
 
-        return $this->successResponse(
-            $compte->load('client'),
-            "Compte créé avec succès",
-            Response::HTTP_CREATED
-        );
+            return $this->errorResponse(
+                "Erreur lors de la création du compte",
+                422
+            );
+        } catch (\Throwable $e) {
+            return $this->errorResponse(
+                "Une erreur inattendue s'est produite",
+                500
+            );
+        }
     }
 
     /**

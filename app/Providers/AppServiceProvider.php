@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\Notifications\NotificationServiceInterface;
+use App\Services\Notifications\MailNotificationService;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Routing\UrlGenerator;
 
@@ -12,7 +14,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(
+            NotificationServiceInterface::class,
+            MailNotificationService::class
+        );
     }
 
     /**

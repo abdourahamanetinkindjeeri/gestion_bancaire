@@ -167,22 +167,22 @@
                                         "properties": {
                                             "titulaire": {
                                                 "type": "string",
-                                                "example": "John Doe"
+                                                "example": "Festo BA"
                                             },
                                             "nci": {
                                                 "description": "Numéro NCI de 13 chiffres commençant par 1 ou 2",
                                                 "type": "string",
-                                                "example": "1123456789"
+                                                "example": "1234567890987"
                                             },
                                             "telephone": {
                                                 "description": "Numéro téléphone sénégalais",
                                                 "type": "string",
-                                                "example": "771234567"
+                                                "example": "781465554"
                                             },
                                             "email": {
                                                 "type": "string",
                                                 "format": "email",
-                                                "example": "john.doe@example.com"
+                                                "example": "festobah@gmail.com"
                                             },
                                             "adresse": {
                                                 "type": "string",
@@ -542,7 +542,7 @@
     "tags": [
         {
             "name": "Comptes",
-            "description": "Gestion des comptes bancaires"
+            "description": "Gestion des comptes bancaires et de leurs transactions"
         }
     ]
 }

@@ -18,8 +18,10 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
+
         \App\Events\CompteCreated::class => [
             \App\Listeners\SendClientNotification::class,
+            \App\Listeners\SendCompteCreatedNotification::class,
         ],
     ];
 
