@@ -109,6 +109,19 @@ return [
             ],
         ],
 
+        'render' => [
+            'driver' => 'pgsql',
+            'host' => env('DB_HOST', 'dpg-d3t4u7ili9vc73donn00-a.frankfurt-postgres.render.com'),
+            'port' => env('DB_PORT', '5432'),
+            'database' => env('DB_DATABASE', 'banking_bzaz'),
+            'username' => env('DB_USERNAME', 'banking_bzaz_user'),
+            'password' => env('DB_PASSWORD', 'y9xvw9YO6zyRpHnQVayywOtGeTSFoqX6'),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'schema' => 'public',
+            'sslmode' => 'require',
+        ],
+
     ],
 
     /*

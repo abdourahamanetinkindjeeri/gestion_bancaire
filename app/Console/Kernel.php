@@ -17,7 +17,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             VerifierBlocageJob::dispatch()->onQueue('archivage');
         })
-            ->dailyAt('01:51')
+            ->dailyAt('03:07')
             ->name('archivage-comptes-bloques')
             ->withoutOverlapping();
     }
