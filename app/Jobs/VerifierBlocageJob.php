@@ -18,8 +18,12 @@ class VerifierBlocageJob implements ShouldQueue
 
     public function handle(): void
     {
+        Log::info('[ARCHIVAGE] Début du job de vérification des comptes à archiver', [
+            'now' => Carbon::now()->toDateTimeString(),
+            'timezone' => Carbon::now()->timezoneName,
+        ]);
         // 🔹 1. Débloquer automatiquement les comptes expirés
-        $comptesExpires = Compte::where('statut', 'bloque')
+        $comptesExpires = Compte::whereIn('statut', ['bloque', 'suspendu'])
             ->where('fin_blocage', '<=', Carbon::now())
             ->get();
 
@@ -39,16 +43,20 @@ class VerifierBlocageJob implements ShouldQueue
             Log::info("✅ Compte {$compte->numero_compte} débloqué automatiquement");
         }
 
-        // 🔹 2. Archiver les comptes bloqués dès la date debut_blocage
-        $comptesQuery = Compte::where('statut', 'bloque')
-            ->where('debut_blocage', '<=', Carbon::now());
-        $comptes = $comptesQuery->get();
+        // 🔹 2. Archiver les comptes bloqués/suspendus (sans condition de date pour les suspendus)
+        $comptesBloques = Compte::where('statut', 'bloque')
+            ->where('debut_blocage', '<=', Carbon::now())
+            ->get();
 
-        Log::info('[ARCHIVAGE] SQL sélection comptes à archiver', [
-            'sql' => $comptesQuery->toSql(),
-            'bindings' => $comptesQuery->getBindings(),
+        $comptesSuspendus = Compte::where('statut', 'suspendu')->get();
+
+        $comptes = $comptesBloques->merge($comptesSuspendus);
+
+        Log::info('[ARCHIVAGE] Comptes à archiver trouvés', [
+            'comptes_bloques' => $comptesBloques->count(),
+            'comptes_suspendus' => $comptesSuspendus->count(),
+            'total' => $comptes->count(),
             'now' => Carbon::now()->toDateTimeString(),
-            'count' => $comptes->count(),
         ]);
         Log::info("🔎 Vérification des comptes bloqués ({$comptes->count()}) à archiver...");
 
@@ -57,3 +65,4 @@ class VerifierBlocageJob implements ShouldQueue
         }
     }
 }
+    

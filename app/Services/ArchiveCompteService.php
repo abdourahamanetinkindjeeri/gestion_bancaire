@@ -13,25 +13,23 @@ class ArchiveCompteService
      */
     public function archiverCompte(Compte $compte): void
     {
-        DB::transaction(function () use ($compte) {
-            Log::info('[ARCHIVAGE] Tentative d\'archivage', [
+        $local = DB::connection('pgsql'); // base principale
+        $neon = DB::connection('neon');   // base d’archivage
+
+        try {
+            $compte->load('transactions');
+
+            Log::info('[ARCHIVAGE] Démarrage', [
                 'compte_id' => $compte->id,
-                'numero_compte' => $compte->numero_compte,
-                'statut' => $compte->statut,
-                'debut_blocage' => $compte->debut_blocage,
-                'fin_blocage' => $compte->fin_blocage,
-                'client_id' => $compte->client_id,
-                'transactions_count' => $compte->transactions()->count(),
+                'source_db' => $local->getDatabaseName(),
+                'target_db' => $neon->getDatabaseName(),
+                'transactions' => $compte->transactions->count(),
             ]);
-            $neon = DB::connection('neon');
 
-            try {
-                $compte->load('transactions');
-
-                // Vérifier si le compte existe déjà dans Neon
-                $existing = $neon->table('comptes_bloque')->where('id', $compte->id)->first();
-                if (!$existing) {
-                    // Insérer le compte dans la base Neon
+            // 1️⃣ Insertion dans Neon
+            $neon->transaction(function () use ($neon, $compte) {
+                $exists = $neon->table('comptes_bloque')->where('id', $compte->id)->exists();
+                if (! $exists) {
                     $neon->table('comptes_bloque')->insert([
                         'id' => $compte->id,
                         'numero_compte' => $compte->numero_compte,
@@ -46,41 +44,34 @@ class ArchiveCompteService
                         'created_at' => $compte->created_at,
                         'updated_at' => now(),
                     ]);
-                } else {
-                    Log::info("ℹ️ Compte [{$compte->id}] déjà archivé dans Neon.");
                 }
 
-                // Insérer les transactions associées (seulement si elles n'existent pas)
-                foreach ($compte->transactions as $transaction) {
-                    $existingTransaction = $neon->table('transactions_bloque')->where('id', $transaction->id)->first();
-                    if (!$existingTransaction) {
-                        $neon->table('transactions_bloque')->insert($transaction->toArray());
+                foreach ($compte->transactions as $t) {
+                    if (! $neon->table('transactions_bloque')->where('id', $t->id)->exists()) {
+                        $neon->table('transactions_bloque')->insert($t->toArray());
                     }
                 }
+            });
 
-                // Vérification post-insertion
-                $verifCompte = $neon->table('comptes_bloque')->where('id', $compte->id)->first();
-                $verifTransactions = $compte->transactions->every(function ($transaction) use ($neon) {
-                    return $neon->table('transactions_bloque')->where('id', $transaction->id)->exists();
-                });
+            // 2️⃣ Vérification des insertions
+            $verifCompte = $neon->table('comptes_bloque')->where('id', $compte->id)->exists();
+            $verifTransactions = $compte->transactions->every(fn($t)
+                => $neon->table('transactions_bloque')->where('id', $t->id)->exists()
+            );
 
-                if ($verifCompte && $verifTransactions) {
-                    // Suppression locale après archivage réussi
+            // 3️⃣ Suppression locale après succès
+            if ($verifCompte && $verifTransactions) {
+                $local->transaction(function () use ($compte) {
                     $compte->transactions()->delete();
                     $compte->forceDelete();
-                    Log::info("✅ Compte [{$compte->id}] archivé et supprimé localement.");
-                } else {
-                    Log::error("❌ Archivage incomplet pour le compte [{$compte->id}] : insertion non vérifiée.");
-                }
-            } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
-                Log::info("ℹ️ Compte [{$compte->id}] déjà archivé, suppression locale uniquement.");
-                $compte->transactions()->delete();
-                $compte->forceDelete();
-                Log::info("✅ Compte [{$compte->id}] supprimé localement après archivage existant.");
-            } catch (\Throwable $e) {
-                Log::error("❌ Erreur lors de l’archivage du compte [{$compte->id}] : {$e->getMessage()}");
-                // Pas de suppression locale en cas d'erreur
+                });
+                Log::info("✅ Compte [{$compte->id}] archivé et supprimé localement.");
+            } else {
+                Log::warning("⚠️ Archivage incomplet pour le compte [{$compte->id}].");
             }
-        });
+
+        } catch (\Throwable $e) {
+            Log::error("❌ Erreur archivage compte [{$compte->id}] : {$e->getMessage()}");
+        }
     }
 }
