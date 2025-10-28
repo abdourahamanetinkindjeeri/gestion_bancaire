@@ -13,11 +13,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // 🔹 Lance le job de vérification des comptes bloqués chaque jour à 15h40
+        // 🔹 Lance le job de vérification des comptes bloqués chaque jour à 01:35
         $schedule->call(function () {
             VerifierBlocageJob::dispatch()->onQueue('archivage');
         })
-            ->dailyAt('01:30')
+            ->dailyAt('01:51')
             ->name('archivage-comptes-bloques')
             ->withoutOverlapping();
     }

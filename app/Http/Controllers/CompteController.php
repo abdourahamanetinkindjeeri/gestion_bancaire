@@ -461,41 +461,4 @@ class CompteController extends Controller
         }
     }
 
-    /**
-     * @OA\Post(
-     *     path="/v1/comptes/debloquer-expiration",
-     *     tags={"Comptes"},
-     *     summary="Débloquer automatiquement les comptes expirés",
-     *     description="Débloque automatiquement tous les comptes dont la période de blocage est arrivée à expiration",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Comptes débloqués avec succès",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="http_code", type="integer", example=200),
-     *             @OA\Property(property="message", type="string", example="3 comptes débloqués automatiquement"),
-     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
-     *         )
-     *     )
-     * )
-     */
-    public function debloquerExpiration()
-    {
-        try {
-            $comptesDebloques = $this->compteService->debloquerComptesExpires();
-
-            return $this->successResponse(
-                collect($comptesDebloques)->map(function ($compte) {
-                    return new CompteResource($compte, $this->clientService);
-                }),
-                count($comptesDebloques) . " comptes débloqués automatiquement"
-            );
-        } catch (\Throwable $e) {
-            return $this->errorResponse(
-                $e->getMessage(),
-                422
-            );
-        }
-    }
 }

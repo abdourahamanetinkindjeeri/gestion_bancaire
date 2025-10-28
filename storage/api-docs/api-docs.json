@@ -837,53 +837,6 @@
                     }
                 ]
             }
-        },
-        "/v1/comptes/debloquer-expiration": {
-            "post": {
-                "tags": [
-                    "Comptes"
-                ],
-                "summary": "Débloquer automatiquement les comptes expirés",
-                "description": "Débloque automatiquement tous les comptes dont la période de blocage est arrivée à expiration",
-                "operationId": "cbfc4f123f588a02aadaf872fc65dc86",
-                "responses": {
-                    "200": {
-                        "description": "Comptes débloqués avec succès",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "http_code": {
-                                            "type": "integer",
-                                            "example": 200
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "3 comptes débloqués automatiquement"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "object"
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
         }
     },
     "components": {

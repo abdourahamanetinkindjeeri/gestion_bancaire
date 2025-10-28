@@ -251,41 +251,6 @@ class CompteService extends BaseService
         });
     }
 
-    /**
-     * Débloquer automatiquement les comptes arrivés à expiration
-     */
-    public function debloquerComptesExpires()
-    {
-        return DB::transaction(function () {
-            try {
-                $comptesExpires = Compte::where('statut', 'bloque')
-                    ->where('fin_blocage', '<=', now())
-                    ->get();
-
-                $comptesDebloques = [];
-
-                foreach ($comptesExpires as $compte) {
-                    $compte->update([
-                        'statut' => 'actif',
-                        'debut_blocage' => null,
-                        'fin_blocage' => null,
-                        'metadata' => array_merge($compte->metadata ?? [], [
-                            'date_deblocage_automatique' => now()->toISOString(),
-                            'motif_deblocage' => 'Expiration période de blocage',
-                        ])
-                    ]);
-
-                    $comptesDebloques[] = $compte;
-                    Log::info("Compte débloqué automatiquement: {$compte->numero_compte}");
-                }
-
-                return $comptesDebloques;
-            } catch (\Throwable $e) {
-                Log::error("Erreur lors du déblocage automatique des comptes: " . $e->getMessage());
-                throw $e;
-            }
-        });
-    }
 
 }
 

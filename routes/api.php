@@ -26,8 +26,6 @@ Route::group(['prefix' => 'v1'], function () {
         ->name('comptes.bloquer');
     Route::post('comptes/{id}/debloquer', [CompteController::class, 'debloquer'])
         ->name('comptes.debloquer');
-    Route::post('comptes/debloquer-expiration', [CompteController::class, 'debloquerExpiration'])
-        ->name('comptes.debloquer_expiration');
 });
 
 
