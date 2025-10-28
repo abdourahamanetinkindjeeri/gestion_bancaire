@@ -251,6 +251,41 @@ class CompteService extends BaseService
         });
     }
 
+    /**
+     * Supprimer un compte (soft delete)
+     */
+    public function deleteCompte(string $compteId)
+    {
+        return DB::transaction(function () use ($compteId) {
+            try {
+                $compte = $this->repository->find($compteId);
+
+                if (!$compte) {
+                    throw new \Exception("Compte introuvable");
+                }
+
+                // Vérifications métier avant suppression
+                if ($compte->statut === 'bloque') {
+                    throw new \Exception("Impossible de supprimer un compte bloqué. Débloquez-le d'abord.");
+                }
+
+                if ($compte->solde > 0) {
+                    throw new \Exception("Impossible de supprimer un compte avec un solde positif. Effectuez un retrait préalable.");
+                }
+
+                // Soft delete du compte
+                $compte->delete();
+
+                Log::info("Compte supprimé avec succès (soft delete): {$compte->numero_compte}");
+
+                return $compte;
+            } catch (\Throwable $e) {
+                Log::error("Erreur lors de la suppression du compte: " . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
 
 }
 

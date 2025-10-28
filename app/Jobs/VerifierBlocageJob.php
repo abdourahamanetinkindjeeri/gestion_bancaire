@@ -40,10 +40,16 @@ class VerifierBlocageJob implements ShouldQueue
         }
 
         // 🔹 2. Archiver les comptes bloqués dès la date debut_blocage
-        $comptes = Compte::where('statut', 'bloque')
-            ->where('debut_blocage', '<=', Carbon::now())
-            ->get();
+        $comptesQuery = Compte::where('statut', 'bloque')
+            ->where('debut_blocage', '<=', Carbon::now());
+        $comptes = $comptesQuery->get();
 
+        Log::info('[ARCHIVAGE] SQL sélection comptes à archiver', [
+            'sql' => $comptesQuery->toSql(),
+            'bindings' => $comptesQuery->getBindings(),
+            'now' => Carbon::now()->toDateTimeString(),
+            'count' => $comptes->count(),
+        ]);
         Log::info("🔎 Vérification des comptes bloqués ({$comptes->count()}) à archiver...");
 
         foreach ($comptes as $compte) {

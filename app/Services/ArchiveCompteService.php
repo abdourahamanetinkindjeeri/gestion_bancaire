@@ -14,6 +14,15 @@ class ArchiveCompteService
     public function archiverCompte(Compte $compte): void
     {
         DB::transaction(function () use ($compte) {
+            Log::info('[ARCHIVAGE] Tentative d\'archivage', [
+                'compte_id' => $compte->id,
+                'numero_compte' => $compte->numero_compte,
+                'statut' => $compte->statut,
+                'debut_blocage' => $compte->debut_blocage,
+                'fin_blocage' => $compte->fin_blocage,
+                'client_id' => $compte->client_id,
+                'transactions_count' => $compte->transactions()->count(),
+            ]);
             $neon = DB::connection('neon');
 
             try {

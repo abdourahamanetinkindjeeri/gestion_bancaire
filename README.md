@@ -4,10 +4,12 @@ API Laravel pour la gestion des comptes bancaires.
 
 ## Fonctionnalités principales
 
--   Création, consultation, modification et suppression de comptes
+-   Création, consultation, modification et suppression de comptes (soft delete)
+-   Blocage et déblocage des comptes épargne
 -   Filtres par type, statut, recherche, tri et pagination
 -   Authentification et sécurité via Laravel Sanctum
 -   Documentation API Swagger (l5-swagger)
+-   Notifications par email et SMS
 
 ## Paramètres de requête pour la liste des comptes
 
@@ -18,6 +20,19 @@ API Laravel pour la gestion des comptes bancaires.
 -   `search` : Recherche par titulaire ou numéro
 -   `sort` : Tri (`dateCreation`, `solde`, `titulaire`)
 -   `order` : Ordre (`asc`, `desc`)
+
+## Suppression de comptes (Soft Delete)
+
+La suppression des comptes utilise un soft delete pour préserver l'intégrité des données :
+
+- **Endpoint** : `DELETE /tinkin/v1/comptes/{id}`
+- **Conditions** :
+  - Le compte doit être actif (non bloqué)
+  - Le solde du compte doit être nul
+- **Comportement** :
+  - Le compte est marqué comme supprimé (champ `deleted_at`)
+  - Les comptes supprimés n'apparaissent plus dans les listes normales
+  - Les données restent accessibles pour audit et restauration si nécessaire
 
 ## Installation
 

@@ -461,4 +461,65 @@ class CompteController extends Controller
         }
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/v1/comptes/{id}",
+     *     tags={"Comptes"},
+     *     summary="Supprimer un compte (soft delete)",
+     *     description="Supprime un compte bancaire de manière logicielle. Le compte doit être actif et avoir un solde nul.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID du compte à supprimer",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Compte supprimé avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="http_code", type="integer", example=200),
+     *             @OA\Property(property="message", type="string", example="Compte supprimé avec succès"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte introuvable",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="http_code", type="integer", example=404),
+     *             @OA\Property(property="message", type="string", example="Compte introuvable")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Erreur de validation métier",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="http_code", type="integer", example=422),
+     *             @OA\Property(property="message", type="string", example="Impossible de supprimer un compte bloqué. Débloquez-le d'abord.")
+     *         )
+     *     )
+     * )
+     */
+    public function destroy(int|string $id)
+    {
+        try {
+            $compte = $this->compteService->deleteCompte($id);
+
+            return $this->successResponse(
+                new CompteResource($compte, $this->clientService),
+                "Compte supprimé avec succès"
+            );
+        } catch (\Throwable $e) {
+            return $this->errorResponse(
+                $e->getMessage(),
+                422
+            );
+        }
+    }
+
 }
