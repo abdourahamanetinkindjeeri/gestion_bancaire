@@ -13,9 +13,6 @@
         {
             "url": "http://localhost:8000/tinkin",
             "description": "Serveur local"
-        },
-        {
-            "url": "/api/v1"
         }
     ],
     "paths": {
