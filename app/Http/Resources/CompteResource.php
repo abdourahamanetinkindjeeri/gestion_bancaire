@@ -28,18 +28,18 @@ class CompteResource extends JsonResource
 
         return [
             'id'              => $this->id,
-            'numeroCompte'    => $this->numero_compte,
-            'titulaire'       => $client ? $client->titulaire . ' ' . $client->prenom : null,
+            'numero_compte'   => $this->numero_compte,
             'type'            => $this->type,
-            'solde'           => $this->solde < 0 ? 0 : $this->solde,
+            'solde_initial'   => $this->solde_initial,
             'devise'          => $this->devise,
-            'dateCreation'    => $this->created_at?->toISOString(),
             'statut'          => $this->statut,
-            'motifBlocage'    => $this->motif_blocage,
-            'metadata'        => [
-                'derniereModification' => $this->updated_at?->toISOString(),
-                'version'              => $this->version ?? 1,
-            ],
+            'client_id'       => $this->client_id,
+            'debut_blocage'   => $this->debut_blocage?->toISOString(),
+            'fin_blocage'     => $this->fin_blocage?->toISOString(),
+            'metadata'        => $this->metadata,
+            'created_at'      => $this->created_at?->toISOString(),
+            'updated_at'      => $this->updated_at?->toISOString(),
+            'deleted_at'      => $this->deleted_at?->toISOString(),
         ];
     }
 }

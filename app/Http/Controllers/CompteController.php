@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CompteStoreRequest;
+use App\Http\Requests\CompteBloquerRequest;
 use App\Http\Resources\CompteResource;
 use App\Http\Resources\CompteResourceCollection;
 use App\Services\ClientService;
@@ -86,9 +87,7 @@ class CompteController extends Controller
         $comptes = $this->compteService->getAll($filters, $page, $limit);
 
         return $this->successResponse(
-            collect($comptes->items())->map(function ($compte) {
-                return new CompteResource($compte, $this->clientService);
-            }),
+            $comptes,
             "Liste des comptes récupérée avec succès"
         );
     }
@@ -134,9 +133,7 @@ class CompteController extends Controller
         $comptes = $this->compteService->getAllNonArchived($filters, $page, $limit);
 
         return $this->successResponse(
-            collect($comptes->items())->map(function ($compte) {
-                return new CompteResource($compte, $this->clientService);
-            }),
+            $comptes,
             "Liste des comptes non archives récupérée avec succès"
         );
     }
@@ -253,5 +250,78 @@ class CompteController extends Controller
             new CompteResource($compte, $this->clientService),
             "Compte récupéré avec succès"
         );
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/v1/comptes/{id}/bloquer",
+     *     tags={"Comptes"},
+     *     summary="Bloquer un compte",
+     *     description="Bloque un compte bancaire pour une durée déterminée avec un motif spécifique",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID du compte à bloquer",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"motif","duree","unite"},
+     *             @OA\Property(property="motif", type="string", example="Activité suspecte détectée"),
+     *             @OA\Property(property="duree", type="integer", minimum=1, example=30),
+     *             @OA\Property(property="unite", type="string", enum={"jour","jours","semaine","semaines","mois","annee","annees"}, example="mois")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Compte bloqué avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="http_code", type="integer", example=200),
+     *             @OA\Property(property="message", type="string", example="Compte bloqué avec succès"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte introuvable",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="http_code", type="integer", example=404),
+     *             @OA\Property(property="message", type="string", example="Compte introuvable")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Erreur de validation ou compte déjà bloqué",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="http_code", type="integer", example=422),
+     *             @OA\Property(property="message", type="string", example="Les données fournies ne sont pas valides"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     )
+     * )
+     */
+    public function bloquer(CompteBloquerRequest $request, int|string $id)
+    {
+        try {
+            $validatedData = $request->validated();
+
+            $compte = $this->compteService->bloquerCompte($id, $validatedData);
+
+            return $this->successResponse(
+                new CompteResource($compte, $this->clientService),
+                "Compte bloqué avec succès"
+            );
+        } catch (\Throwable $e) {
+            return $this->errorResponse(
+                $e->getMessage(),
+                422
+            );
+        }
     }
 }

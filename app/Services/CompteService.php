@@ -123,7 +123,69 @@ class CompteService extends BaseService
         return $numero;
     }
 
+    /**
+     * Bloquer un compte
+     */
+    public function bloquerCompte(string $compteId, array $data)
+    {
+        return DB::transaction(function () use ($compteId, $data) {
+            try {
+                $compte = $this->repository->find($compteId);
 
+                if (!$compte) {
+                    throw new \Exception("Compte introuvable");
+                }
+
+                if ($compte->statut === 'bloque') {
+                    throw new \Exception("Le compte est déjà bloqué");
+                }
+
+                // Calculer la date de fin de blocage
+                $debutBlocage = now();
+                $duree = $data['duree'];
+                $unite = $data['unite'];
+
+                switch ($unite) {
+                    case 'jour':
+                    case 'jours':
+                        $finBlocage = $debutBlocage->copy()->addDays($duree);
+                        break;
+                    case 'semaine':
+                    case 'semaines':
+                        $finBlocage = $debutBlocage->copy()->addWeeks($duree);
+                        break;
+                    case 'mois':
+                        $finBlocage = $debutBlocage->copy()->addMonths($duree);
+                        break;
+                    case 'annee':
+                    case 'annees':
+                        $finBlocage = $debutBlocage->copy()->addYears($duree);
+                        break;
+                    default:
+                        throw new \Exception("Unité de durée invalide");
+                }
+
+                // Mettre à jour le compte
+                $compte->update([
+                    'statut' => 'bloque',
+                    'debut_blocage' => $debutBlocage,
+                    'fin_blocage' => $finBlocage,
+                    'metadata' => array_merge($compte->metadata ?? [], [
+                        'motif_blocage' => $data['motif'],
+                        'duree_blocage' => $duree,
+                        'unite_blocage' => $unite,
+                    ])
+                ]);
+
+                Log::info("Compte bloqué avec succès: {$compte->numero_compte}");
+
+                return $compte;
+            } catch (\Throwable $e) {
+                Log::error("Erreur lors du blocage du compte: " . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
 
 }
 

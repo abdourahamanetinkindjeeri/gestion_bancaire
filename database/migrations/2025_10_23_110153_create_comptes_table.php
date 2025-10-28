@@ -29,10 +29,6 @@ return new class extends Migration
                 ->default(0)
                 ->comment('Solde de départ à la création du compte');
 
-            // $table->decimal('solde', 15, 2)
-            //     ->default(0)
-            //     ->comment('Solde courant du compte (calculé à partir des opérations)');
-
             $table->string('devise', 10)
                 ->default('FCFA')
                 ->comment('Devise du compte, ex: FCFA, EUR, USD');
@@ -40,6 +36,10 @@ return new class extends Migration
             $table->string('statut', 20)
                 ->default('actif')
                 ->comment('Statut du compte : actif, suspendu, clôturé, etc.');
+
+            // --- Dates de blocage ---
+            $table->timestamp('debut_blocage')->nullable()->comment('Date et heure du début du blocage du compte');
+            $table->timestamp('fin_blocage')->nullable()->comment('Date et heure de fin du blocage du compte');
 
             // --- Relation Client ---
             $table->foreignUuid('client_id')
@@ -49,8 +49,7 @@ return new class extends Migration
                 ->comment('Client titulaire du compte');
 
             // --- Métadonnées facultatives ---
-            $table->json('metadata')
-                ->nullable()
+            $table->json('metadata')->nullable()
                 ->comment('Données additionnelles du compte : tags, préférences, etc.');
 
             // --- Timestamps et Soft Delete ---

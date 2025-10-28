@@ -22,6 +22,8 @@ Route::group(['prefix' => 'v1'], function () {
     Route::apiResource('/comptes', CompteController::class)->only(['index', 'store', 'show']);
     Route::get('comptes/non-archives', [CompteController::class, 'getComptesNotArchived'])
         ->name('comptes.non_archives');
+    Route::post('comptes/{id}/bloquer', [CompteController::class, 'bloquer'])
+        ->name('comptes.bloquer');
 });
 
 
