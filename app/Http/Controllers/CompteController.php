@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CompteStoreRequest;
 use App\Http\Requests\CompteBloquerRequest;
+use App\Http\Requests\CompteUpdateRequest;
 use App\Http\Resources\CompteResource;
 use App\Http\Resources\CompteResourceCollection;
 use App\Services\ClientService;
@@ -253,16 +254,90 @@ class CompteController extends Controller
     }
 
     /**
-     * @OA\Post(
-     *     path="/v1/comptes/{id}/bloquer",
+     * @OA\Put(
+     *     path="/v1/comptes/{id}",
      *     tags={"Comptes"},
-     *     summary="Bloquer un compte",
-     *     description="Bloque un compte bancaire pour une durée déterminée avec un motif spécifique",
+     *     summary="Mettre à jour un compte",
+     *     description="Met à jour les informations d'un compte bancaire existant",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="ID du compte à bloquer",
+     *         description="ID du compte à mettre à jour",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="type", type="string", enum={"cheque", "epargne", "courant"}, example="epargne"),
+     *             @OA\Property(property="solde_initial", type="number", minimum=10000, example=50000),
+     *             @OA\Property(property="devise", type="string", example="FCFA"),
+     *             @OA\Property(property="statut", type="string", enum={"actif", "inactif", "bloque", "ferme"}, example="actif"),
+     *             @OA\Property(property="metadata", type="object", example={"notes": "Mise à jour du solde"})
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Compte mis à jour avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="http_code", type="integer", example=200),
+     *             @OA\Property(property="message", type="string", example="Compte mis à jour avec succès"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte introuvable",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="http_code", type="integer", example=404),
+     *             @OA\Property(property="message", type="string", example="Compte introuvable")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Erreur de validation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="http_code", type="integer", example=422),
+     *             @OA\Property(property="message", type="string", example="Les données fournies ne sont pas valides"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     )
+     * )
+     */
+    public function update(CompteUpdateRequest $request, int|string $id)
+    {
+        try {
+            $validatedData = $request->validated();
+
+            $compte = $this->compteService->updateCompte($id, $validatedData);
+
+            return $this->successResponse(
+                new CompteResource($compte, $this->clientService),
+                "Compte mis à jour avec succès"
+            );
+        } catch (\Throwable $e) {
+            return $this->errorResponse(
+                $e->getMessage(),
+                422
+            );
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/v1/comptes/{id}/bloquer",
+     *     tags={"Comptes"},
+     *     summary="Bloquer un compte épargne",
+     *     description="Bloque un compte épargne actif pour une durée déterminée en mois avec un motif spécifique",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID du compte épargne à bloquer",
      *         required=true,
      *         @OA\Schema(type="string")
      *     ),
@@ -271,8 +346,8 @@ class CompteController extends Controller
      *         @OA\JsonContent(
      *             required={"motif","duree","unite"},
      *             @OA\Property(property="motif", type="string", example="Activité suspecte détectée"),
-     *             @OA\Property(property="duree", type="integer", minimum=1, example=30),
-     *             @OA\Property(property="unite", type="string", enum={"jour","jours","semaine","semaines","mois","annee","annees"}, example="mois")
+     *             @OA\Property(property="duree", type="integer", minimum=1, example=3),
+     *             @OA\Property(property="unite", type="string", enum={"mois"}, example="mois")
      *         )
      *     ),
      *     @OA\Response(
@@ -296,11 +371,11 @@ class CompteController extends Controller
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Erreur de validation ou compte déjà bloqué",
+     *         description="Erreur de validation ou contraintes métier non respectées",
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="error"),
      *             @OA\Property(property="http_code", type="integer", example=422),
-     *             @OA\Property(property="message", type="string", example="Les données fournies ne sont pas valides"),
+     *             @OA\Property(property="message", type="string", example="Seuls les comptes épargne actifs peuvent être bloqués"),
      *             @OA\Property(property="errors", type="object")
      *         )
      *     )
@@ -316,6 +391,105 @@ class CompteController extends Controller
             return $this->successResponse(
                 new CompteResource($compte, $this->clientService),
                 "Compte bloqué avec succès"
+            );
+        } catch (\Throwable $e) {
+            return $this->errorResponse(
+                $e->getMessage(),
+                422
+            );
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/v1/comptes/{id}/debloquer",
+     *     tags={"Comptes"},
+     *     summary="Débloquer un compte manuellement",
+     *     description="Débloque un compte bloqué sur demande du client",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID du compte à débloquer",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Compte débloqué avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="http_code", type="integer", example=200),
+     *             @OA\Property(property="message", type="string", example="Compte débloqué avec succès"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte introuvable",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="http_code", type="integer", example=404),
+     *             @OA\Property(property="message", type="string", example="Compte introuvable")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Erreur de validation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="http_code", type="integer", example=422),
+     *             @OA\Property(property="message", type="string", example="Le compte n'est pas bloqué")
+     *         )
+     *     )
+     * )
+     */
+    public function debloquer(int|string $id)
+    {
+        try {
+            $compte = $this->compteService->debloquerCompteManuellement($id);
+
+            return $this->successResponse(
+                new CompteResource($compte, $this->clientService),
+                "Compte débloqué avec succès"
+            );
+        } catch (\Throwable $e) {
+            return $this->errorResponse(
+                $e->getMessage(),
+                422
+            );
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/v1/comptes/debloquer-expiration",
+     *     tags={"Comptes"},
+     *     summary="Débloquer automatiquement les comptes expirés",
+     *     description="Débloque automatiquement tous les comptes dont la période de blocage est arrivée à expiration",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Comptes débloqués avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="http_code", type="integer", example=200),
+     *             @OA\Property(property="message", type="string", example="3 comptes débloqués automatiquement"),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
+     *         )
+     *     )
+     * )
+     */
+    public function debloquerExpiration()
+    {
+        try {
+            $comptesDebloques = $this->compteService->debloquerComptesExpires();
+
+            return $this->successResponse(
+                collect($comptesDebloques)->map(function ($compte) {
+                    return new CompteResource($compte, $this->clientService);
+                }),
+                count($comptesDebloques) . " comptes débloqués automatiquement"
             );
         } catch (\Throwable $e) {
             return $this->errorResponse(

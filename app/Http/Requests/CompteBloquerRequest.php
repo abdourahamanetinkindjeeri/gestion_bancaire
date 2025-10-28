@@ -24,7 +24,7 @@ class CompteBloquerRequest extends FormRequest
         return [
             'motif' => 'required|string',
             'duree' => 'required|integer|min:1',
-            'unite' => 'required|string|in:jour,jours,semaine,semaines,mois,annee,annees',
+            'unite' => 'required|string|in:mois',
         ];
     }
 
@@ -39,7 +39,7 @@ class CompteBloquerRequest extends FormRequest
             'duree.integer' => 'La durée doit être un nombre entier.',
             'duree.min' => 'La durée doit être d\'au moins 1.',
             'unite.required' => 'L\'unité de durée est obligatoire.',
-            'unite.in' => 'L\'unité doit être jour, jours, semaine, semaines, mois, annee ou annees.',
+            'unite.in' => 'L\'unité doit être en mois.',
         ];
     }
 }

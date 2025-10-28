@@ -444,6 +444,156 @@
                         "bearerAuth": []
                     }
                 ]
+            },
+            "put": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Mettre à jour un compte",
+                "description": "Met à jour les informations d'un compte bancaire existant",
+                "operationId": "4f6db2218171aa3464c6c2a36acf1944",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID du compte à mettre à jour",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "cheque",
+                                            "epargne",
+                                            "courant"
+                                        ],
+                                        "example": "epargne"
+                                    },
+                                    "solde_initial": {
+                                        "type": "number",
+                                        "minimum": 10000,
+                                        "example": 50000
+                                    },
+                                    "devise": {
+                                        "type": "string",
+                                        "example": "FCFA"
+                                    },
+                                    "statut": {
+                                        "type": "string",
+                                        "enum": [
+                                            "actif",
+                                            "inactif",
+                                            "bloque",
+                                            "ferme"
+                                        ],
+                                        "example": "actif"
+                                    },
+                                    "metadata": {
+                                        "type": "object",
+                                        "example": {
+                                            "notes": "Mise à jour du solde"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Compte mis à jour avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "http_code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte mis à jour avec succès"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Compte introuvable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "http_code": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte introuvable"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreur de validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "http_code": {
+                                            "type": "integer",
+                                            "example": 422
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Les données fournies ne sont pas valides"
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/v1/comptes/{id}/bloquer": {
@@ -451,14 +601,14 @@
                 "tags": [
                     "Comptes"
                 ],
-                "summary": "Bloquer un compte",
-                "description": "Bloque un compte bancaire pour une durée déterminée avec un motif spécifique",
+                "summary": "Bloquer un compte épargne",
+                "description": "Bloque un compte épargne actif pour une durée déterminée en mois avec un motif spécifique",
                 "operationId": "5941080a253593b87c28b5df0d5fdaf8",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "ID du compte à bloquer",
+                        "description": "ID du compte épargne à bloquer",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -483,18 +633,12 @@
                                     "duree": {
                                         "type": "integer",
                                         "minimum": 1,
-                                        "example": 30
+                                        "example": 3
                                     },
                                     "unite": {
                                         "type": "string",
                                         "enum": [
-                                            "jour",
-                                            "jours",
-                                            "semaine",
-                                            "semaines",
-                                            "mois",
-                                            "annee",
-                                            "annees"
+                                            "mois"
                                         ],
                                         "example": "mois"
                                     }
@@ -557,7 +701,7 @@
                         }
                     },
                     "422": {
-                        "description": "Erreur de validation ou compte déjà bloqué",
+                        "description": "Erreur de validation ou contraintes métier non respectées",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -572,10 +716,160 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Les données fournies ne sont pas valides"
+                                            "example": "Seuls les comptes épargne actifs peuvent être bloqués"
                                         },
                                         "errors": {
                                             "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/v1/comptes/{id}/debloquer": {
+            "post": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Débloquer un compte manuellement",
+                "description": "Débloque un compte bloqué sur demande du client",
+                "operationId": "6bbaacb4cbeba540ca123172e54aa8c3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID du compte à débloquer",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Compte débloqué avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "http_code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte débloqué avec succès"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Compte introuvable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "http_code": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Compte introuvable"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Erreur de validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "http_code": {
+                                            "type": "integer",
+                                            "example": 422
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Le compte n'est pas bloqué"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/v1/comptes/debloquer-expiration": {
+            "post": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Débloquer automatiquement les comptes expirés",
+                "description": "Débloque automatiquement tous les comptes dont la période de blocage est arrivée à expiration",
+                "operationId": "cbfc4f123f588a02aadaf872fc65dc86",
+                "responses": {
+                    "200": {
+                        "description": "Comptes débloqués avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "http_code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "3 comptes débloqués automatiquement"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
                                         }
                                     },
                                     "type": "object"

@@ -124,7 +124,47 @@ class CompteService extends BaseService
     }
 
     /**
-     * Bloquer un compte
+     * Mettre à jour un compte
+     */
+    public function updateCompte(string $compteId, array $data)
+    {
+        return DB::transaction(function () use ($compteId, $data) {
+            try {
+                $compte = $this->repository->find($compteId);
+
+                if (!$compte) {
+                    throw new \Exception("Compte introuvable");
+                }
+
+                // Vérifications de logique métier
+                if (isset($data['statut']) && $data['statut'] === 'bloque' && $compte->statut !== 'bloque') {
+                    throw new \Exception("Utilisez l'endpoint de blocage pour bloquer un compte");
+                }
+
+                if (isset($data['statut']) && $data['statut'] !== 'bloque' && $compte->statut === 'bloque') {
+                    // Si on débloque le compte, on nettoie les dates de blocage
+                    $data['debut_blocage'] = null;
+                    $data['fin_blocage'] = null;
+                    $data['metadata'] = array_merge($compte->metadata ?? [], [
+                        'date_deblocage' => now()->toISOString(),
+                    ]);
+                }
+
+                // Mettre à jour le compte
+                $compte->update($data);
+
+                Log::info("Compte mis à jour avec succès: {$compte->numero_compte}");
+
+                return $compte;
+            } catch (\Throwable $e) {
+                Log::error("Erreur lors de la mise à jour du compte: " . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Bloquer un compte (seulement les comptes épargne actifs)
      */
     public function bloquerCompte(string $compteId, array $data)
     {
@@ -136,34 +176,19 @@ class CompteService extends BaseService
                     throw new \Exception("Compte introuvable");
                 }
 
-                if ($compte->statut === 'bloque') {
-                    throw new \Exception("Le compte est déjà bloqué");
+                // Vérifications métier
+                if ($compte->type !== 'epargne') {
+                    throw new \Exception("Seuls les comptes épargne peuvent être bloqués");
                 }
 
-                // Calculer la date de fin de blocage
+                if ($compte->statut !== 'actif') {
+                    throw new \Exception("Seul un compte actif peut être bloqué");
+                }
+
+                // Calculer la date de fin de blocage (toujours en mois)
                 $debutBlocage = now();
                 $duree = $data['duree'];
-                $unite = $data['unite'];
-
-                switch ($unite) {
-                    case 'jour':
-                    case 'jours':
-                        $finBlocage = $debutBlocage->copy()->addDays($duree);
-                        break;
-                    case 'semaine':
-                    case 'semaines':
-                        $finBlocage = $debutBlocage->copy()->addWeeks($duree);
-                        break;
-                    case 'mois':
-                        $finBlocage = $debutBlocage->copy()->addMonths($duree);
-                        break;
-                    case 'annee':
-                    case 'annees':
-                        $finBlocage = $debutBlocage->copy()->addYears($duree);
-                        break;
-                    default:
-                        throw new \Exception("Unité de durée invalide");
-                }
+                $finBlocage = $debutBlocage->copy()->addMonths($duree);
 
                 // Mettre à jour le compte
                 $compte->update([
@@ -172,16 +197,91 @@ class CompteService extends BaseService
                     'fin_blocage' => $finBlocage,
                     'metadata' => array_merge($compte->metadata ?? [], [
                         'motif_blocage' => $data['motif'],
-                        'duree_blocage' => $duree,
-                        'unite_blocage' => $unite,
+                        'duree_blocage_mois' => $duree,
+                        'date_debut_blocage' => $debutBlocage->toISOString(),
+                        'date_fin_blocage_prevue' => $finBlocage->toISOString(),
                     ])
                 ]);
 
-                Log::info("Compte bloqué avec succès: {$compte->numero_compte}");
+                Log::info("Compte épargne bloqué avec succès: {$compte->numero_compte} pour {$duree} mois");
 
                 return $compte;
             } catch (\Throwable $e) {
                 Log::error("Erreur lors du blocage du compte: " . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Débloquer un compte manuellement (sur demande du client)
+     */
+    public function debloquerCompteManuellement(string $compteId)
+    {
+        return DB::transaction(function () use ($compteId) {
+            try {
+                $compte = $this->repository->find($compteId);
+
+                if (!$compte) {
+                    throw new \Exception("Compte introuvable");
+                }
+
+                if ($compte->statut !== 'bloque') {
+                    throw new \Exception("Le compte n'est pas bloqué");
+                }
+
+                // Mettre à jour le compte
+                $compte->update([
+                    'statut' => 'actif',
+                    'debut_blocage' => null,
+                    'fin_blocage' => null,
+                    'metadata' => array_merge($compte->metadata ?? [], [
+                        'date_deblocage_manuel' => now()->toISOString(),
+                        'motif_deblocage' => 'Demande client',
+                    ])
+                ]);
+
+                Log::info("Compte débloqué manuellement avec succès: {$compte->numero_compte}");
+
+                return $compte;
+            } catch (\Throwable $e) {
+                Log::error("Erreur lors du déblocage manuel du compte: " . $e->getMessage());
+                throw $e;
+            }
+        });
+    }
+
+    /**
+     * Débloquer automatiquement les comptes arrivés à expiration
+     */
+    public function debloquerComptesExpires()
+    {
+        return DB::transaction(function () {
+            try {
+                $comptesExpires = Compte::where('statut', 'bloque')
+                    ->where('fin_blocage', '<=', now())
+                    ->get();
+
+                $comptesDebloques = [];
+
+                foreach ($comptesExpires as $compte) {
+                    $compte->update([
+                        'statut' => 'actif',
+                        'debut_blocage' => null,
+                        'fin_blocage' => null,
+                        'metadata' => array_merge($compte->metadata ?? [], [
+                            'date_deblocage_automatique' => now()->toISOString(),
+                            'motif_deblocage' => 'Expiration période de blocage',
+                        ])
+                    ]);
+
+                    $comptesDebloques[] = $compte;
+                    Log::info("Compte débloqué automatiquement: {$compte->numero_compte}");
+                }
+
+                return $comptesDebloques;
+            } catch (\Throwable $e) {
+                Log::error("Erreur lors du déblocage automatique des comptes: " . $e->getMessage());
                 throw $e;
             }
         });
