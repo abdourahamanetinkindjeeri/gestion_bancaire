@@ -255,14 +255,14 @@
                 }
             }
         },
-        "/v1/comptes/non-archives": {
+        "/v1/comptes/archives": {
             "get": {
                 "tags": [
                     "Comptes"
                 ],
                 "summary": "Liste des comptes non archivés",
                 "description": "Récupère tous les comptes non archivés avec possibilité de filtrage",
-                "operationId": "18aeee1839e78c53da6132a1e353d58b",
+                "operationId": "f1b192c8bb0ad343232b202e5b27251c",
                 "parameters": [
                     {
                         "name": "page",
@@ -329,7 +329,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Liste des comptes non archivés récupérée avec succès",
+                        "description": "Liste des comptes  archivés récupérée avec succès",
                         "content": {
                             "application/json": {
                                 "schema": {

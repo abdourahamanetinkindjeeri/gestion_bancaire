@@ -25,19 +25,11 @@ class CompteService extends BaseService
 
 
     /**
-     * Récupère tous les comptes non archivés
-     *
-     * @param array $filters
-     * @param int $page
-     * @param int $limit
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     * Récupère tous les comptes actifs
      */
     public function getAllNonArchived(array $filters = [], int $page = 1, int $limit = 10)
     {
-        // On s'assure que les comptes archivés ne sont pas retournés
-        $filters['statut'] = "actif"; // ou ['deleted_at' => null] selon ton modèle
-
-        return $this->repository->all($filters, $page, $limit);
+        return $this->repository->getAllNonArchived($filters, $page, $limit);
     }
 
     /**
@@ -45,9 +37,7 @@ class CompteService extends BaseService
      */
     public function getAllArchived(array $filters = [], int $page = 1, int $limit = 10)
     {
-        $filters['statut'] = 'bloque'; // ou ['deleted_at' => 'not null'] selon ton modèle
-
-        return $this->repository->all($filters, $page, $limit);
+        return $this->repository->getAllArchived($filters, $page, $limit);
     }
 
     /**
@@ -285,7 +275,4 @@ class CompteService extends BaseService
             }
         });
     }
-
-
 }
-

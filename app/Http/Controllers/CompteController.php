@@ -97,10 +97,10 @@ class CompteController extends Controller
      * Liste des comptes non archivés
      *
      * @OA\Get(
-     *     path="/v1/comptes/non-archives",
+     *     path="/v1/comptes/archives",
      *     tags={"Comptes"},
-     *     summary="Liste des comptes non archivés",
-     *     description="Récupère tous les comptes non archivés avec possibilité de filtrage",
+     *     summary="Liste des comptes  archivés",
+     *     description="Récupère tous les comptes archivés avec possibilité de filtrage",
      *     @OA\Parameter(name="page", in="query", @OA\Schema(type="integer", default=1)),
      *     @OA\Parameter(name="limit", in="query", @OA\Schema(type="integer", default=10)),
      *     @OA\Parameter(name="type", in="query", @OA\Schema(type="string", enum={"cheque", "epargne", "courant"})),
@@ -110,7 +110,7 @@ class CompteController extends Controller
      *     @OA\Parameter(name="order", in="query", @OA\Schema(type="string", enum={"asc","desc"}, default="desc")),
      *     @OA\Response(
      *         response=200,
-     *         description="Liste des comptes non archivés récupérée avec succès",
+     *         description="Liste des comptes  archivés récupérée avec succès",
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="success"),
      *             @OA\Property(property="http_code", type="integer", example=200),
@@ -125,17 +125,31 @@ class CompteController extends Controller
      *     )
      * )
      */
-    public function getComptesNotArchived(Request $request)
+    // public function getComptesNotArchived(Request $request)
+    // {
+    //     $filters = $request->all();
+    //     $page = (int) $request->get('page', 1);
+    //     $limit = (int) $request->get('limit', 10);
+
+    //     $comptes = $this->compteService->getAllNonArchived($filters, $page, $limit);
+
+    //     return $this->successResponse(
+    //         $comptes,
+    //         "Liste des comptes non archivés récupérée avec succès"
+    //     );
+    // }
+
+       public function getComptesAllArchived(Request $request)
     {
         $filters = $request->all();
         $page = (int) $request->get('page', 1);
         $limit = (int) $request->get('limit', 10);
 
-        $comptes = $this->compteService->getAllNonArchived($filters, $page, $limit);
+        $comptes = $this->compteService->getAllArchived($filters, $page, $limit);
 
         return $this->successResponse(
             $comptes,
-            "Liste des comptes non archivés récupérée avec succès"
+            "Liste des comptes archivés récupérée avec succès"
         );
     }
 
@@ -521,5 +535,7 @@ class CompteController extends Controller
             );
         }
     }
+
+
 
 }

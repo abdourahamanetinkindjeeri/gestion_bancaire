@@ -19,12 +19,14 @@ use App\Http\Controllers\CompteController;
 
 
 Route::group(['prefix' => 'v1'], function () {
+    // Route::get('comptes/non-archives', [CompteController::class, 'getComptesNotArchived'])
+    // ->name('compte.non_archive');
+    Route::get('comptes/archives', [CompteController::class, 'getComptesAllArchived'])
+        ->name('comptes.archives');
     Route::apiResource('/comptes', CompteController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
-    Route::get('comptes/non-archives', [CompteController::class, 'getComptesNotArchived'])
-        ->name('comptes.non_archives');
-    Route::post('comptes/{id}/bloquer', [CompteController::class, 'bloquer'])
+    Route::post('comptes/{compte}/bloquer', [CompteController::class, 'bloquer'])
         ->name('comptes.bloquer');
-    Route::post('comptes/{id}/debloquer', [CompteController::class, 'debloquer'])
+    Route::post('comptes/{compte}/debloquer', [CompteController::class, 'debloquer'])
         ->name('comptes.debloquer');
 });
 

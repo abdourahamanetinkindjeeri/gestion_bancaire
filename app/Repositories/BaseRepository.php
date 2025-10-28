@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class BaseRepository implements BaseRepositoryInterface
 {
@@ -26,9 +27,15 @@ class BaseRepository implements BaseRepositoryInterface
     public function all(array $filters = [], int $page = 1, int $limit = 10): LengthAwarePaginator
     {
         $query = $this->model->newQuery()
-            ->filter($filters)
-            ->search($filters['search'] ?? null, $this->searchable)
-            ->sort($filters['sort'] ?? null, $filters['order'] ?? null);
+            ->when(!empty($filters), function ($q) use ($filters) {
+                $q->filter($filters);
+            })
+            ->when(!empty($filters['search']), function ($q) use ($filters) {
+                $q->search($filters['search'], $this->searchable);
+            })
+            ->when(!empty($filters['sort']), function ($q) use ($filters) {
+                $q->sort($filters['sort'], $filters['order'] ?? 'asc');
+            });
 
         $limit = min($limit, 100);
 
@@ -36,22 +43,25 @@ class BaseRepository implements BaseRepositoryInterface
     }
 
     /**
-     * Recherche locale + fallback cloud
+     * Recherche locale + fallback cloud avec cache
      */
-    public function find(int|string $id): ?Model
+    public function find(int|string $id, array $columns = ['*']): ?Model
     {
-        // Recherche locale
-        $model = $this->model->find($id);
+        $cacheKey = "cloud_{$this->model->getTable()}_{$id}";
 
+        // 1️⃣ Recherche locale
+        $model = $this->model->find($id, $columns);
         if ($model) {
             return $model;
         }
 
-        // Recherche cloud
-        $cloudData = $this->findByIdFromCloud($id);
+        // 2️⃣ Recherche dans le cloud avec cache
+        $cloudData = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($id) {
+            return $this->findByIdFromCloud($id);
+        });
+
         if ($cloudData) {
-            // Créer un objet Model à partir des données cloud
-            return $this->model->newFromBuilder($cloudData);
+            return $this->model->newFromBuilder((array) $cloudData);
         }
 
         return null;
@@ -63,14 +73,14 @@ class BaseRepository implements BaseRepositoryInterface
     public function findByIdFromCloud(int|string $id, string $table = null): ?object
     {
         try {
-            $table = $table ?? $this->model->getTable();
+            $table = $table ?? $this->model->getTable() . '_bloque';
 
+            // dd($table);
             return DB::connection('neon')
                 ->table($table)
                 ->where('id', $id)
                 ->first();
         } catch (\Exception $e) {
-            // Log l'erreur mais ne pas interrompre l'exécution
             Log::warning("Erreur lors de la recherche cloud pour {$table}: " . $e->getMessage());
             return null;
         }
@@ -106,5 +116,21 @@ class BaseRepository implements BaseRepositoryInterface
         $model = $this->model->find($id);
 
         return $model ? $model->delete() : false;
+    }
+
+    /**
+     * Récupère tous les enregistrements non archivés
+     */
+    public function getAllNonArchived(array $filters = [], int $page = 1, int $limit = 10): LengthAwarePaginator
+    {
+        throw new \Exception("Méthode non implémentée dans la classe de base");
+    }
+
+    /**
+     * Récupère tous les enregistrements archivés
+     */
+    public function getAllArchived(array $filters = [], int $page = 1, int $limit = 10): LengthAwarePaginator
+    {
+        throw new \Exception("Méthode non implémentée dans la classe de base");
     }
 }

@@ -75,4 +75,16 @@ class ClientRepository implements BaseRepositoryInterface
             ->orWhere('telephone', $telephone)
             ->first();
     }
+
+    public function getAllNonArchived(array $filters = [], int $page = 1, int $limit = 10): LengthAwarePaginator
+    {
+        // Pour les clients, on considère tous comme non archivés (pas de concept d'archivage)
+        return $this->all($filters, $page, $limit);
+    }
+
+    public function getAllArchived(array $filters = [], int $page = 1, int $limit = 10): LengthAwarePaginator
+    {
+        // Pour les clients, pas d'archivage, retourner une collection vide
+        return $this->model->newQuery()->whereRaw('1 = 0')->paginate($limit, ['*'], 'page', $page);
+    }
 }
