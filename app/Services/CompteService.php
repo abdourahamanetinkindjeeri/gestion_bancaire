@@ -16,7 +16,7 @@ class CompteService extends BaseService
 {
     protected ClientRepository $clientRepository;
 
-    public function __construct(CompteRepository $repository, ClientRepository $clientRepository, )
+    public function __construct(CompteRepository $repository, ClientRepository $clientRepository)
     {
         parent::__construct($repository);
         $this->clientRepository = $clientRepository;
@@ -45,7 +45,7 @@ class CompteService extends BaseService
      */
     public function getAllArchived(array $filters = [], int $page = 1, int $limit = 10)
     {
-        $filters['status'] = 'bloque'; // ou ['deleted_at' => 'not null'] selon ton modèle
+        $filters['statut'] = 'bloque'; // ou ['deleted_at' => 'not null'] selon ton modèle
 
         return $this->repository->all($filters, $page, $limit);
     }

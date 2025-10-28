@@ -135,7 +135,7 @@ class CompteController extends Controller
 
         return $this->successResponse(
             $comptes,
-            "Liste des comptes non archives récupérée avec succès"
+            "Liste des comptes non archivés récupérée avec succès"
         );
     }
 

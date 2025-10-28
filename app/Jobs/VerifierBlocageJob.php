@@ -18,16 +18,14 @@ class VerifierBlocageJob implements ShouldQueue
 
     public function handle(): void
     {
-        Log::info('[ARCHIVAGE] Début du job de vérification des comptes à archiver', [
-            'now' => Carbon::now()->toDateTimeString(),
-            'timezone' => Carbon::now()->timezoneName,
+        Log::info('[ARCHIVAGE] Début du job de vérification', [
+            'timestamp' => Carbon::now()->toDateTimeString(),
         ]);
-        // 🔹 1. Débloquer automatiquement les comptes expirés
+
+        // 🔹 Déblocage automatique des comptes expirés
         $comptesExpires = Compte::whereIn('statut', ['bloque', 'suspendu'])
             ->where('fin_blocage', '<=', Carbon::now())
             ->get();
-
-        Log::info("🔄 Déblocage automatique de {$comptesExpires->count()} comptes expirés...");
 
         foreach ($comptesExpires as $compte) {
             $compte->update([
@@ -40,29 +38,26 @@ class VerifierBlocageJob implements ShouldQueue
                 ])
             ]);
 
-            Log::info("✅ Compte {$compte->numero_compte} débloqué automatiquement");
+            Log::info("✅ Compte débloqué automatiquement", [
+                'compte_id' => $compte->id,
+                'numero_compte' => $compte->numero_compte
+            ]);
         }
 
-        // 🔹 2. Archiver les comptes bloqués/suspendus (sans condition de date pour les suspendus)
-        $comptesBloques = Compte::where('statut', 'bloque')
-            ->where('debut_blocage', '<=', Carbon::now())
-            ->get();
-
+        // 🔹 Récupération des comptes à archiver
+        $comptesBloques = Compte::where('statut', 'bloque')->get();
         $comptesSuspendus = Compte::where('statut', 'suspendu')->get();
-
         $comptes = $comptesBloques->merge($comptesSuspendus);
 
-        Log::info('[ARCHIVAGE] Comptes à archiver trouvés', [
-            'comptes_bloques' => $comptesBloques->count(),
-            'comptes_suspendus' => $comptesSuspendus->count(),
+        Log::info('[ARCHIVAGE] Comptes à archiver', [
+            'bloques' => $comptesBloques->count(),
+            'suspendus' => $comptesSuspendus->count(),
             'total' => $comptes->count(),
-            'now' => Carbon::now()->toDateTimeString(),
         ]);
-        Log::info("🔎 Vérification des comptes bloqués ({$comptes->count()}) à archiver...");
 
+        // 🔹 Dispatch des jobs d’archivage
         foreach ($comptes as $compte) {
             ArchiverCompteJob::dispatch($compte->id)->onQueue('archivage');
         }
     }
 }
-    

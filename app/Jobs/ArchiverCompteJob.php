@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class ArchiverCompteJob implements ShouldQueue
 {
@@ -18,9 +19,15 @@ class ArchiverCompteJob implements ShouldQueue
 
     public function handle(ArchiveCompteService $service): void
     {
+        Log::info("[JOB] ArchiverCompteJob déclenché", ['compte_id' => $this->compteId]);
+
         $compte = Compte::with('transactions')->find($this->compteId);
 
         if (! $compte || $compte->statut !== 'bloque') {
+            Log::warning("[JOB] Compte non archivable", [
+                'compte_id' => $this->compteId,
+                'statut' => $compte?->statut
+            ]);
             return;
         }
 

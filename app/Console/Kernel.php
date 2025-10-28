@@ -8,23 +8,17 @@ use App\Jobs\VerifierBlocageJob;
 
 class Kernel extends ConsoleKernel
 {
-    /**
-     * Planification des tâches automatiques.
-     */
     protected function schedule(Schedule $schedule): void
     {
-        // 🔹 Lance le job de vérification des comptes bloqués chaque jour à 01:35
+        // 🔹 Tâche quotidienne à 02:00 pour archivage des comptes bloqués
         $schedule->call(function () {
             VerifierBlocageJob::dispatch()->onQueue('archivage');
         })
-            ->dailyAt('14:30')
+            ->dailyAt('15:30')
             ->name('archivage-comptes-bloques')
             ->withoutOverlapping();
     }
 
-    /**
-     * Enregistrement des commandes artisan.
-     */
     protected function commands(): void
     {
         $this->load(__DIR__ . '/Commands');

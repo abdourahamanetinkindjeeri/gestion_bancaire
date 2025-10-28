@@ -39,7 +39,7 @@ class SendClientNotification implements ShouldQueue
                    "Détails du compte :\n" .
                    "- Numéro de compte : {$compte->numero_compte}\n" .
                    "- Type : {$compte->type}\n" .
-                   "- Solde initial : {$compte->solde_initial} {$compte->devise}\n\n" .
+                   "- Solde initial : {$compte->solde} {$compte->devise}\n\n" .
                    "Vous pouvez maintenant effectuer des opérations sur votre compte.\n\n" .
                    "Cordialement,\n" .
                    "L'équipe de gestion bancaire";
