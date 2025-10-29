@@ -75,12 +75,25 @@ class CompteService extends BaseService
 
     private function findOrCreateClient(array $clientData): Client
     {
-        // Chercher le client par email ou téléphone
+        // Chercher le client par email, téléphone ou nci
         $client = Client::where('email', $clientData['email'])
             ->orWhere('telephone', $clientData['telephone'])
+            ->orWhere('nci', $clientData['nci'])
             ->first();
 
         if ($client) {
+            // Mettre à jour les infos manquantes si besoin (optionnel)
+            $update = false;
+            $fields = ['titulaire', 'adresse'];
+            foreach ($fields as $field) {
+                if (empty($client->$field) && !empty($clientData[$field])) {
+                    $client->$field = $clientData[$field];
+                    $update = true;
+                }
+            }
+            if ($update) {
+                $client->save();
+            }
             return $client;
         }
 

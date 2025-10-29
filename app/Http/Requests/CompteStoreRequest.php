@@ -29,8 +29,8 @@ class CompteStoreRequest extends FormRequest
             'devise' => 'required|string',
             'client.titulaire' => 'required|string',
             'client.nci' => ['required', new NciSenegalRule()],
-            'client.telephone' => ['required', 'unique:clients,telephone', new TelephoneSenegalRule()],
-            'client.email' => 'required|email|unique:clients,email',
+                'client.telephone' => ['required', new TelephoneSenegalRule()],
+                'client.email' => 'required|email',
             'client.adresse' => 'required|string',
         ];
     }
@@ -50,10 +50,9 @@ class CompteStoreRequest extends FormRequest
             'client.titulaire.required' => 'Le nom du titulaire est obligatoire.',
             'client.nci.required' => 'Le numéro NCI est obligatoire.',
             'client.telephone.required' => 'Le numéro de téléphone est obligatoire.',
-            'client.telephone.unique' => 'Ce numéro de téléphone est déjà utilisé.',
             'client.email.required' => 'L\'adresse email est obligatoire.',
             'client.email.email' => 'L\'adresse email doit être valide.',
-            'client.email.unique' => 'Cette adresse email est déjà utilisée.',
+                // plus de message unique car plus de règle unique
             'client.adresse.required' => 'L\'adresse est obligatoire.',
         ];
     }
