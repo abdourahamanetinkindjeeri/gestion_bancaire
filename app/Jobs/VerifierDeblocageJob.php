@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Jobs\DesarchiverCompteJob;
 
-class VerifierDesarchivageJob implements ShouldQueue
+class VerifierDeblocageJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 

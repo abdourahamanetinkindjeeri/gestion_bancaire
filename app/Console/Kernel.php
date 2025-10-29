@@ -5,7 +5,7 @@ namespace App\Console;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use App\Jobs\VerifierBlocageJob;
-use App\Jobs\VerifierDesarchivageJob;
+use App\Jobs\VerifierDeblocageJob;
 use Illuminate\Support\Facades\Artisan;
 
 class Kernel extends ConsoleKernel
@@ -36,7 +36,7 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping();
 
         $schedule->call(function () {
-            VerifierDesarchivageJob::dispatch()->onQueue(('desarchivage'))
+            VerifierDeblocageJob::dispatch()->onQueue(('desarchivage'))
                 ->dailyAt('16:10')
                 ->name('verification-deblocages')
                 ->withoutOverlapping();;

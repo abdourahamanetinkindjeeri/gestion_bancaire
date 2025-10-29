@@ -27,4 +27,21 @@ class Handler extends ExceptionHandler
             //
         });
     }
+
+    /**
+     * Personnalise la réponse pour les erreurs de validation API
+     */
+    public function render($request, Throwable $exception)
+    {
+        if ($exception instanceof \Illuminate\Validation\ValidationException) {
+            $response = [
+                'status'    => 'error',
+                'http_code' => 422,
+                'message'   => 'Les données fournies ne sont pas valides',
+                'errors'    => $exception->errors(),
+            ];
+            return response()->json($response, 422);
+        }
+        return parent::render($request, $exception);
+    }
 }

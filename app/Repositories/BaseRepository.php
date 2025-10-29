@@ -70,7 +70,7 @@ class BaseRepository implements BaseRepositoryInterface
     /**
      * Recherche sur Neon (cloud)
      */
-    public function findByIdFromCloud(int|string $id, string $table = null): ?object
+    public function findByIdFromCloud(int|string $id, ?string $table = null): ?object
     {
         try {
             $table = $table ?? $this->model->getTable() . '_bloque';
