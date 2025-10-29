@@ -36,7 +36,7 @@ class ArchiveCompteService
                         'debut_blocage' => $compte->debut_blocage,
                         'fin_blocage' => $compte->fin_blocage,
                         'client_id' => $compte->client_id,
-                        'metadata' => $compte->metadata,
+                        'metadata' => json_encode($compte->metadata ?? []),
                         'created_at' => $compte->created_at,
                         'updated_at' => now(),
                     ]);

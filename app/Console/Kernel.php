@@ -11,19 +11,19 @@ class Kernel extends ConsoleKernel
 {
     protected function schedule(Schedule $schedule): void
     {
-        // 🔹 Tâche quotidienne à 00:00 pour archivage des comptes bloqués
+        // 🔹 Archivage quotidien des comptes bloqués à 15h00
         $schedule->call(function () {
             Artisan::call('archive:sync');
         })
-            ->dailyAt('00:00')
+            ->dailyAt('15:10')
             ->name('archivage-comptes-bloques')
             ->withoutOverlapping();
 
-        // 🔹 Tâche quotidienne à 02:00 pour vérification des blocages
+        // 🔹 Vérification quotidienne des blocages à 15h00
         $schedule->call(function () {
             VerifierBlocageJob::dispatch()->onQueue('archivage');
         })
-            ->dailyAt('02:00')
+            ->dailyAt('15:10')
             ->name('verification-blocages')
             ->withoutOverlapping();
     }
