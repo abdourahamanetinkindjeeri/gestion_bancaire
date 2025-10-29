@@ -87,4 +87,10 @@ class ClientRepository implements BaseRepositoryInterface
         // Pour les clients, pas d'archivage, retourner une collection vide
         return $this->model->newQuery()->whereRaw('1 = 0')->paginate($limit, ['*'], 'page', $page);
     }
+
+    public function findByNumeroOrId(string $numeroOrId): ?Client
+    {
+        // Pour les clients, cette méthode n'est pas pertinente, retourner null
+        return null;
+    }
 }

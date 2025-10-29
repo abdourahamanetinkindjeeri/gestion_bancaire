@@ -75,4 +75,21 @@ class CompteRepository extends BaseRepository
 
         return $query->paginate($limit, ['*'], 'page', $page);
     }
+
+    /**
+     * Trouver un compte par numéro ou ID
+     */
+    public function findByNumeroOrId(string $numeroOrId): ?Compte
+    {
+        // Vérifier si c'est un UUID valide
+        $uuidPattern = '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i';
+
+        if (preg_match($uuidPattern, $numeroOrId)) {
+            // C'est un UUID, rechercher par ID
+            return $this->model->where('id', $numeroOrId)->first();
+        } else {
+            // Ce n'est pas un UUID, rechercher par numéro de compte
+            return $this->model->where('numero_compte', $numeroOrId)->first();
+        }
+    }
 }

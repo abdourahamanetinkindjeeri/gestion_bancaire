@@ -14,5 +14,6 @@ interface BaseRepositoryInterface
     public function delete(int|string $id): bool;
     public function getAllNonArchived(array $filters = [], int $page = 1, int $limit = 10): LengthAwarePaginator;
     public function getAllArchived(array $filters = [], int $page = 1, int $limit = 10): LengthAwarePaginator;
+    public function findByNumeroOrId(string $numeroOrId): ?Model;
 
 }

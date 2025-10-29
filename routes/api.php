@@ -23,11 +23,13 @@ Route::group(['prefix' => 'v1'], function () {
     // ->name('compte.non_archive');
     Route::get('comptes/archives', [CompteController::class, 'getComptesAllArchived'])
         ->name('comptes.archives');
-    Route::apiResource('/comptes', CompteController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
+    // Route::apiResource('/comptes', CompteController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
+    Route::apiResource('/comptes', CompteController::class);
     Route::post('comptes/{compte}/bloquer', [CompteController::class, 'bloquer'])
         ->name('comptes.bloquer');
-    Route::post('comptes/{compte}/debloquer', [CompteController::class, 'debloquer'])
-        ->name('comptes.debloquer');
+    Route::get('/comptes/{id}/details', [CompteController::class, 'showDetails']);
+    // Route::post('comptes/{compte}/debloquer', [CompteController::class, 'debloquer'])
+    //     ->name('comptes.debloquer');
 });
 
 

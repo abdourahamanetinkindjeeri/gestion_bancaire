@@ -133,4 +133,12 @@ class BaseRepository implements BaseRepositoryInterface
     {
         throw new \Exception("Méthode non implémentée dans la classe de base");
     }
+
+    /**
+     * Trouver un enregistrement par numéro ou ID
+     */
+    public function findByNumeroOrId(string $numeroOrId): ?Model
+    {
+        throw new \Exception("Méthode non implémentée dans la classe de base");
+    }
 }

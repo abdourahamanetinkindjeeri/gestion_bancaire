@@ -429,128 +429,42 @@ class CompteController extends Controller
     }
 
 
-    /**
-     * @OA\Post(
-     *     path="/v1/comptes/{id}/debloquer",
-     *     tags={"Comptes"},
-     *     summary="Débloquer un compte manuellement",
-     *     description="Débloque un compte bloqué sur demande du client",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         description="ID du compte à débloquer",
-     *         required=true,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Compte débloqué avec succès",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="http_code", type="integer", example=200),
-     *             @OA\Property(property="message", type="string", example="Compte débloqué avec succès"),
-     *             @OA\Property(property="data", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Compte introuvable",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(property="http_code", type="integer", example=404),
-     *             @OA\Property(property="message", type="string", example="Compte introuvable")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Erreur de validation",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(property="http_code", type="integer", example=422),
-     *             @OA\Property(property="message", type="string", example="Le compte n'est pas bloqué")
-     *         )
-     *     )
-     * )
-     */
-    public function debloquer(int|string $id)
-    {
-        try {
-            $compte = $this->compteService->debloquerCompteManuellement($id);
 
-            return $this->successResponse(
-                new CompteResource($compte, $this->clientService),
-                "Compte débloqué avec succès"
-            );
-        } catch (\Throwable $e) {
-            return $this->errorResponse(
-                $e->getMessage(),
-                422
-            );
-        }
-    }
+    // public function debloquer(int|string $id)
+    // {
+    //     try {
+    //         $compte = $this->compteService->debloquerCompteManuellement($id);
 
-    /**
-     * @OA\Post(
-     *     path="/v1/comptes/{id}/desarchiver",
-     *     tags={"Comptes"},
-     *     summary="Désarchiver un compte",
-     *     description="Désarchive un compte bloqué depuis la base d'archivage et le remet en service",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         description="ID du compte à désarchiver",
-     *         required=true,
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Compte désarchivé avec succès",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="http_code", type="integer", example=200),
-     *             @OA\Property(property="message", type="string", example="Compte désarchivé avec succès"),
-     *             @OA\Property(property="data", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Compte introuvable dans l'archive",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(property="http_code", type="integer", example=404),
-     *             @OA\Property(property="message", type="string", example="Compte introuvable dans l'archive")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Erreur lors du désarchivage",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(property="http_code", type="integer", example=422),
-     *             @OA\Property(property="message", type="string", example="Erreur lors du désarchivage")
-     *         )
-     *     )
-     * )
-     */
-    public function desarchiver(int|string $id)
-    {
-        try {
-            // Dispatch du job pour désarchiver le compte
-            \App\Jobs\DesarchiverCompteJob::dispatch($id);
+    //         return $this->successResponse(
+    //             new CompteResource($compte, $this->clientService),
+    //             "Compte débloqué avec succès"
+    //         );
+    //     } catch (\Throwable $e) {
+    //         return $this->errorResponse(
+    //             $e->getMessage(),
+    //             422
+    //         );
+    //     }
+    // }
 
-            return $this->successResponse(
-                null,
-                "Demande de désarchivage du compte en cours"
-            );
-        } catch (\Throwable $e) {
-            return $this->errorResponse(
-                "Erreur lors de la demande de désarchivage: " . $e->getMessage(),
-                422
-            );
-        }
-    }
+
+    // public function desarchiver(int|string $id)
+    // {
+    //     try {
+    //         // Dispatch du job pour désarchiver le compte
+    //         \App\Jobs\DesarchiverCompteJob::dispatch($id);
+
+    //         return $this->successResponse(
+    //             null,
+    //             "Demande de désarchivage du compte en cours"
+    //         );
+    //     } catch (\Throwable $e) {
+    //         return $this->errorResponse(
+    //             "Erreur lors de la demande de désarchivage: " . $e->getMessage(),
+    //             422
+    //         );
+    //     }
+    // }
 
     /**
      * @OA\Delete(
@@ -611,5 +525,54 @@ class CompteController extends Controller
                 422
             );
         }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/v1/comptes/{id}/details",
+     *     tags={"Comptes"},
+     *     summary="Détails d'un compte par numéro ou ID",
+     *     description="Récupère les détails d'un compte bancaire par son numéro de compte ou son ID",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="Numéro de compte ou ID du compte",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Détails du compte récupérés avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="http_code", type="integer", example=200),
+     *             @OA\Property(property="message", type="string", example="Détails du compte récupérés avec succès"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte introuvable",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="http_code", type="integer", example=404),
+     *             @OA\Property(property="message", type="string", example="Compte introuvable")
+     *         )
+     *     )
+     * )
+     */
+    public function showDetails(string $numeroOrId)
+    {
+        $compte = $this->compteService->getByNumeroOrId($numeroOrId);
+
+        if (!$compte) {
+            return $this->errorResponse("Compte introuvable", 404);
+        }
+
+        return $this->successResponse(
+            new CompteResource($compte, $this->clientService),
+            "Détails du compte récupérés avec succès"
+        );
     }
 }

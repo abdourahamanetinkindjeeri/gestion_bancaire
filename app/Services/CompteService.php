@@ -359,4 +359,12 @@ class CompteService extends BaseService
             }
         });
     }
+
+    /**
+     * Récupérer un compte par numéro ou ID
+     */
+    public function getByNumeroOrId(string $numeroOrId)
+    {
+        return $this->repository->findByNumeroOrId($numeroOrId);
+    }
 }

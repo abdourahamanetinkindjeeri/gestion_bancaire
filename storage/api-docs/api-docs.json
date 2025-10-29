@@ -13,6 +13,9 @@
         {
             "url": "http://localhost:8000/tinkin",
             "description": "Serveur local"
+        },
+        {
+            "url": "/api/v1"
         }
     ],
     "paths": {
@@ -839,19 +842,19 @@
                 ]
             }
         },
-        "/v1/comptes/{id}/debloquer": {
-            "post": {
+        "/v1/comptes/{id}/details": {
+            "get": {
                 "tags": [
                     "Comptes"
                 ],
-                "summary": "Débloquer un compte manuellement",
-                "description": "Débloque un compte bloqué sur demande du client",
-                "operationId": "6bbaacb4cbeba540ca123172e54aa8c3",
+                "summary": "Détails d'un compte par numéro ou ID",
+                "description": "Récupère les détails d'un compte bancaire par son numéro de compte ou son ID",
+                "operationId": "0c5a4811ad0d34ca8e96870e4d5e8248",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "ID du compte à débloquer",
+                        "description": "Numéro de compte ou ID du compte",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -860,7 +863,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Compte débloqué avec succès",
+                        "description": "Détails du compte récupérés avec succès",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -875,7 +878,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Compte débloqué avec succès"
+                                            "example": "Détails du compte récupérés avec succès"
                                         },
                                         "data": {
                                             "type": "object"
@@ -903,133 +906,6 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Compte introuvable"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Erreur de validation",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "error"
-                                        },
-                                        "http_code": {
-                                            "type": "integer",
-                                            "example": 422
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Le compte n'est pas bloqué"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/v1/comptes/{id}/desarchiver": {
-            "post": {
-                "tags": [
-                    "Comptes"
-                ],
-                "summary": "Désarchiver un compte",
-                "description": "Désarchive un compte bloqué depuis la base d'archivage et le remet en service",
-                "operationId": "43093532ac50a4c785ffda8bf7511e46",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "ID du compte à désarchiver",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Compte désarchivé avec succès",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "http_code": {
-                                            "type": "integer",
-                                            "example": 200
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Compte désarchivé avec succès"
-                                        },
-                                        "data": {
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Compte introuvable dans l'archive",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "error"
-                                        },
-                                        "http_code": {
-                                            "type": "integer",
-                                            "example": 404
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Compte introuvable dans l'archive"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "422": {
-                        "description": "Erreur lors du désarchivage",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "status": {
-                                            "type": "string",
-                                            "example": "error"
-                                        },
-                                        "http_code": {
-                                            "type": "integer",
-                                            "example": 422
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Erreur lors du désarchivage"
                                         }
                                     },
                                     "type": "object"
