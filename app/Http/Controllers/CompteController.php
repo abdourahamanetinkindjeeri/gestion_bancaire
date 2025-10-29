@@ -491,6 +491,68 @@ class CompteController extends Controller
     }
 
     /**
+     * @OA\Post(
+     *     path="/v1/comptes/{id}/desarchiver",
+     *     tags={"Comptes"},
+     *     summary="Désarchiver un compte",
+     *     description="Désarchive un compte bloqué depuis la base d'archivage et le remet en service",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID du compte à désarchiver",
+     *         required=true,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Compte désarchivé avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="http_code", type="integer", example=200),
+     *             @OA\Property(property="message", type="string", example="Compte désarchivé avec succès"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Compte introuvable dans l'archive",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="http_code", type="integer", example=404),
+     *             @OA\Property(property="message", type="string", example="Compte introuvable dans l'archive")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Erreur lors du désarchivage",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="http_code", type="integer", example=422),
+     *             @OA\Property(property="message", type="string", example="Erreur lors du désarchivage")
+     *         )
+     *     )
+     * )
+     */
+    public function desarchiver(int|string $id)
+    {
+        try {
+            // Dispatch du job pour désarchiver le compte
+            \App\Jobs\DesarchiverCompteJob::dispatch($id);
+
+            return $this->successResponse(
+                null,
+                "Demande de désarchivage du compte en cours"
+            );
+        } catch (\Throwable $e) {
+            return $this->errorResponse(
+                "Erreur lors de la demande de désarchivage: " . $e->getMessage(),
+                422
+            );
+        }
+    }
+
+    /**
      * @OA\Delete(
      *     path="/v1/comptes/{id}",
      *     tags={"Comptes"},
