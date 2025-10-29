@@ -33,14 +33,14 @@ class SendClientNotification implements ShouldQueue
         if ($client && $client->email) {
             $subject = 'Création de votre compte bancaire';
             $message = "Bonjour {$client->titulaire},\n\n" .
-                       "Votre compte bancaire a été créé avec succès.\n\n" .
-                       "Détails du compte :\n" .
-                       "- Numéro de compte : {$compte->numero_compte}\n" .
-                       "- Type : {$compte->type}\n" .
-                       "- Solde initial : {$compte->solde} {$compte->devise}\n\n" .
-                       "Vous pouvez maintenant effectuer des opérations sur votre compte.\n\n" .
-                       "Cordialement,\n" .
-                       "L'équipe de gestion bancaire";
+                "Votre compte bancaire a été créé avec succès.\n\n" .
+                "Détails du compte :\n" .
+                "- Numéro de compte : {$compte->numero_compte}\n" .
+                "- Type : {$compte->type}\n" .
+                "- Solde initial : {$compte->solde} {$compte->devise}\n\n" .
+                "Vous pouvez maintenant effectuer des opérations sur votre compte.\n\n" .
+                "Cordialement,\n" .
+                "L'équipe de gestion bancaire";
             try {
                 Mail::raw($message, function ($mail) use ($client, $subject) {
                     $mail->to($client->email)->subject($subject);
