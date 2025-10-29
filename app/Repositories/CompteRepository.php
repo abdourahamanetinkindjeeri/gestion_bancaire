@@ -18,6 +18,36 @@ class CompteRepository extends BaseRepository
     }
 
     /**
+     * Récupère les comptes actifs de type épargne ou chèque
+     */
+    public function all(array $filters = [], int $page = 1, int $limit = 10): LengthAwarePaginator
+    {
+        $query = $this->model->newQuery();
+
+        $query->where(function ($q) {
+            $q->where('type', 'cheque')
+                ->orWhere('type', 'epargne');
+        })->where('statut', 'actif');
+
+        // Recherches globales
+        if (!empty($filters['search'])) {
+            $query->search($filters['search'], $this->searchable);
+        }
+
+        // Tri
+        if (!empty($filters['sort'])) {
+            $query->sort($filters['sort'], $filters['order'] ?? 'asc');
+        }
+
+        // Limite maximum
+        $limit = min($limit, 100);
+
+        return $query->paginate($limit, ['*'], 'page', $page);
+    }
+
+
+
+    /**
      * Récupère tous les comptes actifs (PostgreSQL)
      */
     public function getAllNonArchived(array $filters = [], int $page = 1, int $limit = 10): LengthAwarePaginator

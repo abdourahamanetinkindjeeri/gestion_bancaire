@@ -57,7 +57,7 @@ class CompteController extends Controller
      *     description="Récupère une liste paginée de tous les comptes avec possibilité de filtrage",
      *     @OA\Parameter(name="page", in="query", @OA\Schema(type="integer", default=1)),
      *     @OA\Parameter(name="limit", in="query", @OA\Schema(type="integer", default=10)),
-     *     @OA\Parameter(name="type", in="query", @OA\Schema(type="string", enum={"cheque", "epargne", "courant"})),
+     *     @OA\Parameter(name="type", in="query", @OA\Schema(type="string", enum={"cheque", "epargne"})),
      *     @OA\Parameter(name="statut", in="query", @OA\Schema(type="string")),
      *     @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
      *     @OA\Parameter(name="sort", in="query", @OA\Schema(type="string", default="id")),
@@ -139,7 +139,7 @@ class CompteController extends Controller
     //     );
     // }
 
-       public function getComptesAllArchived(Request $request)
+    public function getComptesAllArchived(Request $request)
     {
         $filters = $request->all();
         $page = (int) $request->get('page', 1);
@@ -346,7 +346,7 @@ class CompteController extends Controller
      *     path="/v1/comptes/{id}/bloquer",
      *     tags={"Comptes"},
      *     summary="Bloquer un compte épargne",
-     *     description="Bloque un compte épargne actif pour une durée déterminée en mois avec un motif spécifique",
+     *     description="Bloque un compte épargne actif pour une durée déterminée avec un motif spécifique. L'unité peut être en mois ou en jours. La date de début peut être renseignée, sinon elle sera définie automatiquement.",
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
@@ -361,7 +361,14 @@ class CompteController extends Controller
      *             required={"motif","duree","unite"},
      *             @OA\Property(property="motif", type="string", example="Activité suspecte détectée"),
      *             @OA\Property(property="duree", type="integer", minimum=1, example=3),
-     *             @OA\Property(property="unite", type="string", enum={"mois"}, example="mois")
+     *             @OA\Property(property="unite", type="string", enum={"mois","jour"}, example="mois"),
+     *             @OA\Property(
+     *                 property="debut_blocage",
+     *                 type="string",
+     *                 format="date-time",
+     *                 example="2025-10-30T08:00:00Z",
+     *                 description="Date et heure du début du blocage (optionnel). Si non renseignée, la date actuelle sera utilisée."
+     *             )
      *         )
      *     ),
      *     @OA\Response(
@@ -395,11 +402,18 @@ class CompteController extends Controller
      *     )
      * )
      */
+
     public function bloquer(CompteBloquerRequest $request, int|string $id)
     {
         try {
             $validatedData = $request->validated();
 
+            // Si la date de début n'est pas fournie, utiliser maintenant
+            if (!isset($validatedData['debut_blocage']) || empty($validatedData['debut_blocage'])) {
+                $validatedData['debut_blocage'] = now();
+            }
+
+            // Appel au service pour bloquer le compte
             $compte = $this->compteService->bloquerCompte($id, $validatedData);
 
             return $this->successResponse(
@@ -413,6 +427,7 @@ class CompteController extends Controller
             );
         }
     }
+
 
     /**
      * @OA\Post(
@@ -535,7 +550,4 @@ class CompteController extends Controller
             );
         }
     }
-
-
-
 }
