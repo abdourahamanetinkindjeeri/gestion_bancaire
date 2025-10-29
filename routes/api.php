@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CompteController;
+use App\Http\Controllers\ClientController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +31,10 @@ Route::group(['prefix' => 'v1'], function () {
     Route::get('/comptes/{id}/details', [CompteController::class, 'showDetails']);
     // Route::post('comptes/{compte}/debloquer', [CompteController::class, 'debloquer'])
     //     ->name('comptes.debloquer');
+
+    // Routes pour les clients
+    Route::get('/clients/{numeroOrId}', [ClientController::class, 'showByNumeroOrId'])
+        ->name('clients.show_by_numero_or_id');
 });
 
 

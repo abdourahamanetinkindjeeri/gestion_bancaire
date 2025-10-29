@@ -90,7 +90,23 @@ class ClientRepository implements BaseRepositoryInterface
 
     public function findByNumeroOrId(string $numeroOrId): ?Client
     {
-        // Pour les clients, cette méthode n'est pas pertinente, retourner null
-        return null;
+        // Vérifier si la valeur ressemble à un UUID (format standard)
+        $uuidPattern = '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i';
+
+        $query = $this->model->newQuery();
+
+        if (preg_match($uuidPattern, $numeroOrId)) {
+            // Si c'est un UUID, rechercher dans l'ID
+            $query->where('id', $numeroOrId);
+        } else {
+            // Sinon, rechercher dans les autres champs
+            $query->where(function ($q) use ($numeroOrId) {
+                $q->where('telephone', $numeroOrId)
+                  ->orWhere('email', $numeroOrId)
+                  ->orWhere('nci', $numeroOrId);
+            });
+        }
+
+        return $query->first();
     }
 }

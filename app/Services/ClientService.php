@@ -49,5 +49,13 @@ class ClientService extends BaseService
         return null;
     }
 
+    /**
+     * Recherche un client par numéro de téléphone, email, NCI ou ID
+     */
+    public function findByNumeroOrId(string $numeroOrId): ?Client
+    {
+        return $this->clientRepository->findByNumeroOrId($numeroOrId);
+    }
+
 }
 

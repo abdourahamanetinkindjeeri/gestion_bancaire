@@ -13,12 +13,88 @@
         {
             "url": "http://localhost:8000/tinkin",
             "description": "Serveur local"
-        },
-        {
-            "url": "/api/v1"
         }
     ],
     "paths": {
+        "/v1/clients/{numeroOrId}": {
+            "get": {
+                "tags": [
+                    "Clients"
+                ],
+                "summary": "Récupérer un client par numéro de téléphone, email, NCI ou ID",
+                "description": "Récupère les détails d'un client bancaire par son numéro de téléphone, email, numéro NCI ou ID",
+                "operationId": "1e9bc8eee5c9509a99234b4edca1b200",
+                "parameters": [
+                    {
+                        "name": "numeroOrId",
+                        "in": "path",
+                        "description": "Numéro de téléphone, email, numéro NCI ou ID du client",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Client récupéré avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "http_code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Client récupéré avec succès"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Client introuvable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "error"
+                                        },
+                                        "http_code": {
+                                            "type": "integer",
+                                            "example": 404
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Client introuvable"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/v1/comptes": {
             "get": {
                 "tags": [
@@ -1015,6 +1091,10 @@
         }
     },
     "tags": [
+        {
+            "name": "Clients",
+            "description": "Gestion des clients bancaires"
+        },
         {
             "name": "Comptes",
             "description": "Gestion des comptes bancaires et de leurs transactions"
