@@ -3,10 +3,12 @@
 namespace App\Services;
 
 use App\Events\CompteCreated;
+use App\Jobs\ChangeCompteStatusJob;
 use App\Models\Compte;
 use App\Repositories\ClientRepository;
 use App\Repositories\CompteRepository;
 use App\Models\Client;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -22,6 +24,11 @@ class CompteService extends BaseService
         $this->clientRepository = $clientRepository;
     }
 
+    public function getAll(array $filters = [], int $page = 1, int $limit = 10): LengthAwarePaginator
+    {
+
+        return $this->repository->all($filters, $page, $limit);
+    }
 
 
     /**
@@ -153,9 +160,56 @@ class CompteService extends BaseService
         });
     }
 
-    /**
-     * Bloquer un compte (seulement les comptes épargne actifs)
-     */
+    // /**
+    //  * Bloquer un compte (seulement les comptes épargne actifs)
+    //  */
+    // public function bloquerCompte(string $compteId, array $data)
+    // {
+    //     return DB::transaction(function () use ($compteId, $data) {
+    //         try {
+    //             $compte = $this->repository->find($compteId);
+
+    //             if (!$compte) {
+    //                 throw new \Exception("Compte introuvable");
+    //             }
+
+    //             // Vérifications métier
+    //             if ($compte->type !== 'epargne') {
+    //                 throw new \Exception("Seuls les comptes épargne peuvent être bloqués");
+    //             }
+
+    //             if ($compte->statut !== 'actif') {
+    //                 throw new \Exception("Seul un compte actif peut être bloqué");
+    //             }
+
+    //             // Calculer la date de fin de blocage (toujours en mois)
+    //             $debutBlocage = now();
+    //             $duree = $data['duree'];
+    //             $finBlocage = $debutBlocage->copy()->addMonths($duree);
+
+    //             // Mettre à jour le compte
+    //             $compte->update([
+    //                 'statut' => 'bloque',
+    //                 'debut_blocage' => $debutBlocage,
+    //                 'fin_blocage' => $finBlocage,
+    //                 'metadata' => array_merge($compte->metadata ?? [], [
+    //                     'motif_blocage' => $data['motif'],
+    //                     'duree_blocage_mois' => $duree,
+    //                     'date_debut_blocage' => $debutBlocage->toISOString(),
+    //                     'date_fin_blocage_prevue' => $finBlocage->toISOString(),
+    //                 ])
+    //             ]);
+
+    //             Log::info("Compte épargne bloqué avec succès: {$compte->numero_compte} pour {$duree} mois");
+
+    //             return $compte;
+    //         } catch (\Throwable $e) {
+    //             Log::error("Erreur lors du blocage du compte: " . $e->getMessage());
+    //             throw $e;
+    //         }
+    //     });
+    // }
+
     public function bloquerCompte(string $compteId, array $data)
     {
         return DB::transaction(function () use ($compteId, $data) {
@@ -166,7 +220,6 @@ class CompteService extends BaseService
                     throw new \Exception("Compte introuvable");
                 }
 
-                // Vérifications métier
                 if ($compte->type !== 'epargne') {
                     throw new \Exception("Seuls les comptes épargne peuvent être bloqués");
                 }
@@ -175,25 +228,45 @@ class CompteService extends BaseService
                     throw new \Exception("Seul un compte actif peut être bloqué");
                 }
 
-                // Calculer la date de fin de blocage (toujours en mois)
-                $debutBlocage = now();
+                // Prendre la date de début renseignée ou maintenant
+                $debutBlocage = !empty($data['debut_blocage'])
+                    ? \Carbon\Carbon::parse($data['debut_blocage'])
+                    : now();
+
                 $duree = $data['duree'];
-                $finBlocage = $debutBlocage->copy()->addMonths($duree);
+                $unite = $data['unite'] ?? 'mois'; // par défaut 'mois'
+
+                // Calculer la date de fin selon l'unité
+                if ($unite === 'jour') {
+                    $finBlocage = $debutBlocage->copy()->addDays($duree);
+                } else {
+                    $finBlocage = $debutBlocage->copy()->addMonths($duree);
+                }
 
                 // Mettre à jour le compte
                 $compte->update([
-                    'statut' => 'bloque',
                     'debut_blocage' => $debutBlocage,
                     'fin_blocage' => $finBlocage,
                     'metadata' => array_merge($compte->metadata ?? [], [
                         'motif_blocage' => $data['motif'],
-                        'duree_blocage_mois' => $duree,
+                        'duree_blocage' => $duree,
+                        'unite_blocage' => $unite,
                         'date_debut_blocage' => $debutBlocage->toISOString(),
                         'date_fin_blocage_prevue' => $finBlocage->toISOString(),
                     ])
                 ]);
 
-                Log::info("Compte épargne bloqué avec succès: {$compte->numero_compte} pour {$duree} mois");
+                // Job pour changer le statut à 'bloque' à la date de début
+                $secondsUntilStart = max(0, $debutBlocage->diffInSeconds(now()));
+                ChangeCompteStatusJob::dispatch($compte->id, 'bloque')
+                    ->delay($secondsUntilStart);
+
+                // Job pour remettre le compte à 'actif' à la fin du blocage
+                $secondsUntilEnd = max(0, $finBlocage->diffInSeconds(now()));
+                ChangeCompteStatusJob::dispatch($compte->id, 'actif')
+                    ->delay($secondsUntilEnd);
+
+                Log::info("Blocage du compte planifié pour {$compte->numero_compte} de {$debutBlocage} à {$finBlocage}");
 
                 return $compte;
             } catch (\Throwable $e) {
@@ -202,6 +275,10 @@ class CompteService extends BaseService
             }
         });
     }
+
+
+
+
 
     /**
      * Débloquer un compte manuellement (sur demande du client)

@@ -48,8 +48,7 @@
                             "type": "string",
                             "enum": [
                                 "cheque",
-                                "epargne",
-                                "courant"
+                                "epargne"
                             ]
                         }
                     },
@@ -260,8 +259,8 @@
                 "tags": [
                     "Comptes"
                 ],
-                "summary": "Liste des comptes non archivés",
-                "description": "Récupère tous les comptes non archivés avec possibilité de filtrage",
+                "summary": "Liste des comptes  archivés",
+                "description": "Récupère tous les comptes archivés avec possibilité de filtrage",
                 "operationId": "f1b192c8bb0ad343232b202e5b27251c",
                 "parameters": [
                     {
@@ -700,7 +699,7 @@
                     "Comptes"
                 ],
                 "summary": "Bloquer un compte épargne",
-                "description": "Bloque un compte épargne actif pour une durée déterminée en mois avec un motif spécifique",
+                "description": "Bloque un compte épargne actif pour une durée déterminée avec un motif spécifique. L'unité peut être en mois ou en jours. La date de début peut être renseignée, sinon elle sera définie automatiquement.",
                 "operationId": "5941080a253593b87c28b5df0d5fdaf8",
                 "parameters": [
                     {
@@ -736,9 +735,16 @@
                                     "unite": {
                                         "type": "string",
                                         "enum": [
-                                            "mois"
+                                            "mois",
+                                            "jour"
                                         ],
                                         "example": "mois"
+                                    },
+                                    "debut_blocage": {
+                                        "description": "Date et heure du début du blocage (optionnel). Si non renseignée, la date actuelle sera utilisée.",
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2025-10-30T08:00:00Z"
                                     }
                                 },
                                 "type": "object"
