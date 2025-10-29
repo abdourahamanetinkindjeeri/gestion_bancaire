@@ -243,6 +243,7 @@ class CompteService extends BaseService
 
     /**
      * Supprimer un compte (soft delete)
+     * Seuls les comptes actifs peuvent être supprimés
      */
     public function deleteCompte(string $compteId)
     {
@@ -254,16 +255,17 @@ class CompteService extends BaseService
                     throw new \Exception("Compte introuvable");
                 }
 
-                // Vérifications métier avant suppression
-                if ($compte->statut === 'bloque') {
-                    throw new \Exception("Impossible de supprimer un compte bloqué. Débloquez-le d'abord.");
+                // Vérification du statut
+                if ($compte->statut !== 'actif') {
+                    throw new \Exception("Impossible de supprimer un compte non actif. Seuls les comptes actifs peuvent être supprimés.");
                 }
 
+                // Vérification du solde
                 if ($compte->solde > 0) {
                     throw new \Exception("Impossible de supprimer un compte avec un solde positif. Effectuez un retrait préalable.");
                 }
 
-                // Soft delete du compte
+                // Soft delete
                 $compte->delete();
 
                 Log::info("Compte supprimé avec succès (soft delete): {$compte->numero_compte}");
