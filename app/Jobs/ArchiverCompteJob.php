@@ -23,10 +23,12 @@ class ArchiverCompteJob implements ShouldQueue
 
         $compte = Compte::with('transactions')->find($this->compteId);
 
-        if (! $compte || $compte->statut !== 'bloque') {
+        if (! $compte || $compte->statut !== 'bloque' || $compte->type !== 'epargne' || $compte->debut_blocage > now()) {
             Log::warning("[JOB] Compte non archivable", [
                 'compte_id' => $this->compteId,
-                'statut' => $compte?->statut
+                'statut' => $compte?->statut,
+                'type' => $compte?->type,
+                'debut_blocage' => $compte?->debut_blocage
             ]);
             return;
         }

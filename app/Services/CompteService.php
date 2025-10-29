@@ -213,66 +213,58 @@ class CompteService extends BaseService
     public function bloquerCompte(string $compteId, array $data)
     {
         return DB::transaction(function () use ($compteId, $data) {
-            try {
-                $compte = $this->repository->find($compteId);
+            $compte = $this->repository->find($compteId);
 
-                if (!$compte) {
-                    throw new \Exception("Compte introuvable");
-                }
-
-                if ($compte->type !== 'epargne') {
-                    throw new \Exception("Seuls les comptes épargne peuvent être bloqués");
-                }
-
-                if ($compte->statut !== 'actif') {
-                    throw new \Exception("Seul un compte actif peut être bloqué");
-                }
-
-                // Prendre la date de début renseignée ou maintenant
-                $debutBlocage = !empty($data['debut_blocage'])
-                    ? \Carbon\Carbon::parse($data['debut_blocage'])
-                    : now();
-
-                $duree = $data['duree'];
-                $unite = $data['unite'] ?? 'mois'; // par défaut 'mois'
-
-                // Calculer la date de fin selon l'unité
-                if ($unite === 'jour') {
-                    $finBlocage = $debutBlocage->copy()->addDays($duree);
-                } else {
-                    $finBlocage = $debutBlocage->copy()->addMonths($duree);
-                }
-
-                // Mettre à jour le compte
-                $compte->update([
-                    'debut_blocage' => $debutBlocage,
-                    'fin_blocage' => $finBlocage,
-                    'metadata' => array_merge($compte->metadata ?? [], [
-                        'motif_blocage' => $data['motif'],
-                        'duree_blocage' => $duree,
-                        'unite_blocage' => $unite,
-                        'date_debut_blocage' => $debutBlocage->toISOString(),
-                        'date_fin_blocage_prevue' => $finBlocage->toISOString(),
-                    ])
-                ]);
-
-                // Job pour changer le statut à 'bloque' à la date de début
-                $secondsUntilStart = max(0, $debutBlocage->diffInSeconds(now()));
-                ChangeCompteStatusJob::dispatch($compte->id, 'bloque')
-                    ->delay($secondsUntilStart);
-
-                // Job pour remettre le compte à 'actif' à la fin du blocage
-                $secondsUntilEnd = max(0, $finBlocage->diffInSeconds(now()));
-                ChangeCompteStatusJob::dispatch($compte->id, 'actif')
-                    ->delay($secondsUntilEnd);
-
-                Log::info("Blocage du compte planifié pour {$compte->numero_compte} de {$debutBlocage} à {$finBlocage}");
-
-                return $compte;
-            } catch (\Throwable $e) {
-                Log::error("Erreur lors du blocage du compte: " . $e->getMessage());
-                throw $e;
+            if (!$compte) {
+                throw new \Exception("Compte introuvable");
             }
+
+            if ($compte->type !== 'epargne') {
+                throw new \Exception("Seuls les comptes épargne peuvent être bloqués");
+            }
+
+            if ($compte->statut !== 'actif') {
+                throw new \Exception("Seul un compte actif peut être bloqué");
+            }
+
+            $debutBlocage = !empty($data['debut_blocage'])
+                ? \Carbon\Carbon::parse($data['debut_blocage'])
+                : now();
+
+            $duree = $data['duree'];
+            $unite = $data['unite'] ?? 'mois';
+
+            $finBlocage = $unite === 'jour'
+                ? $debutBlocage->copy()->addDays($duree)
+                : $debutBlocage->copy()->addMonths($duree);
+
+            // Mettre à jour le compte dans la DB
+            $compte->update([
+                'debut_blocage' => $debutBlocage,
+                'fin_blocage' => $finBlocage,
+                'metadata' => array_merge($compte->metadata ?? [], [
+                    'motif_blocage' => $data['motif'],
+                    'duree_blocage' => $duree,
+                    'unite_blocage' => $unite,
+                    'date_debut_blocage' => $debutBlocage->toISOString(),
+                    'date_fin_blocage_prevue' => $finBlocage->toISOString(),
+                ])
+            ]);
+
+            // Changer le statut immédiatement si la date de début est passée
+            if ($debutBlocage->lte(now())) {
+                $compte->update(['statut' => 'bloque']);
+            }
+
+            // Planification du job pour les futurs blocages
+            if ($debutBlocage->gt(now())) {
+                ChangeCompteStatusJob::dispatch($compte->id, 'bloque')
+                    ->delay($debutBlocage);
+            }
+
+            Log::info("Blocage du compte planifié pour {$compte->numero_compte} à partir de {$debutBlocage} jusqu'à {$finBlocage}");
+
+            return $compte;
         });
     }
 

@@ -45,8 +45,15 @@ class VerifierBlocageJob implements ShouldQueue
         }
 
         // 🔹 Récupération des comptes à archiver
-        $comptesBloques = Compte::where('statut', 'bloque')->get();
-        $comptesSuspendus = Compte::where('statut', 'suspendu')->get();
+        // Seuls les comptes épargne bloqués dont la date de début de blocage est échue peuvent être archivés
+        $comptesBloques = Compte::where('statut', 'bloque')
+            ->where('type', 'epargne')
+            ->where('debut_blocage', '<=', Carbon::now())
+            ->get();
+        $comptesSuspendus = Compte::where('statut', 'suspendu')
+            ->where('type', 'epargne')
+            ->where('debut_blocage', '<=', Carbon::now())
+            ->get();
         $comptes = $comptesBloques->merge($comptesSuspendus);
 
         Log::info('[ARCHIVAGE] Comptes à archiver', [
