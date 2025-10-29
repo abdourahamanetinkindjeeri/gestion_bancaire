@@ -6,6 +6,7 @@ API Laravel pour la gestion des comptes bancaires.
 
 -   Création, consultation, modification et suppression de comptes (soft delete)
 -   Blocage et déblocage des comptes épargne
+-   Recherche de comptes par numéro ou ID
 -   Filtres par type, statut, recherche, tri et pagination
 -   Authentification et sécurité via Laravel Sanctum
 -   Documentation API Swagger (l5-swagger)
@@ -20,6 +21,16 @@ API Laravel pour la gestion des comptes bancaires.
 -   `search` : Recherche par titulaire ou numéro
 -   `sort` : Tri (`dateCreation`, `solde`, `titulaire`)
 -   `order` : Ordre (`asc`, `desc`)
+
+## Recherche de comptes par numéro ou ID
+
+L'API permet de récupérer les détails d'un compte bancaire en utilisant soit son numéro de compte, soit son identifiant unique (UUID).
+
+- **Endpoint** : `GET /tinkin/v1/comptes/{numeroOuId}/details`
+- **Paramètres** :
+  - `numeroOuId` : Numéro de compte (ex: "C00123456") ou ID UUID du compte
+- **Réponse** : Détails complets du compte avec informations du client
+- **Gestion d'erreur** : Retourne 404 si le compte n'est pas trouvé
 
 ## Suppression de comptes (Soft Delete)
 
