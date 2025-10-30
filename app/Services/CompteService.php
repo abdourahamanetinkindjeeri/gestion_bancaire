@@ -75,38 +75,32 @@ class CompteService extends BaseService
 
     private function findOrCreateClient(array $clientData): Client
     {
-        // Chercher le client par email, téléphone ou nci
-        $client = Client::where('email', $clientData['email'])
-            ->orWhere('telephone', $clientData['telephone'])
-            ->orWhere('nci', $clientData['nci'])
+        // Chercher le client par email ou téléphone dans la table users
+        $user = \App\Models\User::where('email', $clientData['email'])
+            ->orWhere('name', $clientData['telephone'])
             ->first();
 
-        if ($client) {
-            // Mettre à jour les infos manquantes si besoin (optionnel)
-            $update = false;
-            $fields = ['titulaire', 'adresse'];
-            foreach ($fields as $field) {
-                if (empty($client->$field) && !empty($clientData[$field])) {
-                    $client->$field = $clientData[$field];
-                    $update = true;
-                }
-            }
-            if ($update) {
-                $client->save();
-            }
-            return $client;
+        if (!$user) {
+            // Créer un nouvel utilisateur avec un UUID
+            $user = new \App\Models\User();
+            $user->id = (string) Str::uuid();
+            $user->name = $clientData['telephone'];
+            $user->email = $clientData['email'];
+            $user->password = bcrypt(Str::random(12)); // mot de passe temporaire
+            $user->save();
         }
 
-        // Créer un nouveau client
-        return Client::create([
-            'code_client' => 'CLT' . Str::random(8),
-            'titulaire' => $clientData['titulaire'],
-            'nci' => $clientData['nci'],
-            'email' => $clientData['email'],
-            'telephone' => $clientData['telephone'],
-            'adresse' => $clientData['adresse'],
-            'actif' => true,
-        ]);
+        // Chercher le client lié à cet utilisateur
+        $client = Client::where('user_id', $user->id)->first();
+
+        if (!$client) {
+            // Créer un nouveau client
+            $client = Client::create([
+                'user_id' => $user->id,
+            ]);
+        }
+
+        return $client;
     }
 
 
