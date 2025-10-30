@@ -16,6 +16,7 @@ return new class extends Migration
                 ->comment('Identifiant unique de l\'utilisateur (UUID)');
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('telephone', 9)->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();

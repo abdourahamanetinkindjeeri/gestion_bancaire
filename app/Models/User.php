@@ -14,7 +14,11 @@ class User extends Authenticatable
 
     public $incrementing = false;
     protected $keyType = 'string';
-    protected $fillable = ['name', 'email', 'password'];
+    protected $fillable = ['name', 'email', 'telephone', 'password'];
+
+    protected $casts = [
+        'telephone' => 'string',
+    ];
     protected $hidden = ['password', 'remember_token'];
 
     public function admin()

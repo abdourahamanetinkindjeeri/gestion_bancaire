@@ -8,6 +8,7 @@ use App\Models\Compte;
 use App\Repositories\ClientRepository;
 use App\Repositories\CompteRepository;
 use App\Models\Client;
+use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -77,16 +78,23 @@ class CompteService extends BaseService
     {
         // Chercher le client par email ou téléphone dans la table users
         $user = \App\Models\User::where('email', $clientData['email'])
-            ->orWhere('name', $clientData['telephone'])
+            ->orWhere('telephone', $clientData['telephone'])
             ->first();
 
         if (!$user) {
             // Créer un nouvel utilisateur avec un UUID
-            $user = new \App\Models\User();
+            $user = new User();
             $user->id = (string) Str::uuid();
-            $user->name = $clientData['telephone'];
+            $user->name = $clientData['titulaire'];
+            $user->telephone = $clientData['telephone'];
             $user->email = $clientData['email'];
             $user->password = bcrypt(Str::random(12)); // mot de passe temporaire
+            $user->save();
+        } else {
+            // Mettre à jour les informations de l'utilisateur existant si nécessaire
+            $user->name = $clientData['titulaire'];
+            $user->telephone = $clientData['telephone'];
+            $user->email = $clientData['email'];
             $user->save();
         }
 

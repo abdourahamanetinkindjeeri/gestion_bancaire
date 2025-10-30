@@ -8,42 +8,42 @@
     "item": [
         {
             "name": "Login",
-                    "request": {
-                        "method": "POST",
-                        "header": [
-                            { "key": "Content-Type", "value": "application/json" }
-                        ],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n  \"email\": \"admin@local.test\",\n  \"password\": \"password\"\n}"
-                        },
-                        "url": {
-                            "raw": "{{base_url}}/api/v1/auth/login",
-                            "host": ["{{base_url}}"],
-                            "path": ["api", "v1", "auth", "login"]
-                        }
-                    },
-                    "response": [],
-                    "event": [
-                        {
-                            "listen": "test",
-                            "script": {
-                                "type": "text/javascript",
-                                "exec": [
-                                    "// Récupère access_token et refresh_token de la réponse et les stocke dans les variables d'environnement Postman",
-                                    "if (pm.response.code === 200) {",
-                                    "    var json = pm.response.json();",
-                                    "    if (json.data && json.data.access_token) {",
-                                    "        pm.environment.set('access_token', json.data.access_token);",
-                                    "    }",
-                                    "    if (json.data && json.data.refresh_token) {",
-                                    "        pm.environment.set('refresh_token', json.data.refresh_token);",
-                                    "    }",
-                                    "}"
-                                ]
-                            }
-                        }
-                    ]
+            "request": {
+                "method": "POST",
+                "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"email\": \"admin@local.test\",\n  \"password\": \"password\"\n}"
+                },
+                "url": {
+                    "raw": "{{base_url}}/api/v1/auth/login",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "v1", "auth", "login"]
+                }
+            },
+            "response": [],
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "type": "text/javascript",
+                        "exec": [
+                            "// Récupère access_token et refresh_token de la réponse et les stocke dans les variables d'environnement Postman",
+                            "if (pm.response.code === 200) {",
+                            "    var json = pm.response.json();",
+                            "    if (json.data && json.data.access_token) {",
+                            "        pm.environment.set('access_token', json.data.access_token);",
+                            "    }",
+                            "    if (json.data && json.data.refresh_token) {",
+                            "        pm.environment.set('refresh_token', json.data.refresh_token);",
+                            "    }",
+                            "}"
+                        ]
+                    }
+                }
+            ]
         },
         {
             "name": "Refresh Token",

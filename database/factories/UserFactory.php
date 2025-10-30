@@ -27,6 +27,7 @@ class UserFactory extends Factory
             'id' => $this->faker->uuid(),
             'name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
+            'telephone' => $this->faker->numerify('#########'), // 9 chiffres pour le Sénégal
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),

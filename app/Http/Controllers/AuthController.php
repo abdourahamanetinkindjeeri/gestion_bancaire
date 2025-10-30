@@ -86,11 +86,28 @@ class AuthController extends Controller
             );
         }
 
-        return $this->successResponse(
+        $response = $this->successResponse(
             $result['data'],
             $result['message'] ?? 'Connexion réussie',
             Response::HTTP_OK
         );
+
+        // Stocker le refresh token dans un cookie sécurisé
+        if (isset($result['refresh_token'])) {
+            $response->withCookie(cookie(
+                'refresh_token',
+                $result['refresh_token'],
+                60 * 24 * 30, // 30 jours
+                '/',
+                null,
+                true, // secure
+                true, // httpOnly
+                false, // raw
+                'Strict' // sameSite
+            ));
+        }
+
+        return $response;
     }
 
     /**
@@ -129,7 +146,13 @@ class AuthController extends Controller
      */
     public function refresh(Request $request)
     {
-        $refreshToken = $request->input('refresh_token');
+        $refreshToken = $request->cookie('refresh_token');
+        if (!$refreshToken) {
+            return $this->errorResponse(
+                'Refresh token manquant',
+                Response::HTTP_UNAUTHORIZED
+            );
+        }
         $result = $this->authService->refresh($refreshToken);
 
         if (!$result['success']) {
@@ -176,10 +199,15 @@ class AuthController extends Controller
     {
         $this->authService->logout($request->user());
 
-        return $this->successResponse(
+        $response = $this->successResponse(
             null,
             'Déconnexion réussie',
             Response::HTTP_OK
         );
+
+        // Supprimer le cookie du refresh token
+        $response->withCookie(cookie()->forget('refresh_token'));
+
+        return $response;
     }
 }
