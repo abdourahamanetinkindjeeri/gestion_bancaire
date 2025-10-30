@@ -21,6 +21,15 @@ class AuthService
         }
         $tokenResult = $user->createToken('AccessToken');
         $refreshToken = $user->createToken('RefreshToken');
+
+        // Déterminer le rôle de l'utilisateur
+        $role = null;
+        if ($user->admin) {
+            $role = 'admin';
+        } elseif ($user->client) {
+            $role = 'client';
+        }
+
         return [
             'success' => true,
             'data' => [
@@ -28,6 +37,7 @@ class AuthService
                 'refresh_token' => $refreshToken->accessToken,
                 'token_type' => 'Bearer',
                 'expires_in' => 3600,
+                'role' => $role,
             ],
             'message' => 'Connexion réussie'
         ];

@@ -12,3 +12,10 @@ php artisan migrate --force
 
 echo "Starting Laravel application..."
 exec "$@"
+
+echo "Start queue work"
+
+php artisan schedule:run
+
+php artisan queue:work --verbose --tries=3 --timeout=90 
+
