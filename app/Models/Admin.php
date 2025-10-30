@@ -2,40 +2,21 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class Admin extends Authenticatable
+class Admin extends Model
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasUuids;
+    
+    protected $fillable = ['user_id'];
+    public $incrementing = false;
+    protected $keyType = 'string';
 
-    protected $fillable = [
-        'nom',
-        'prenom',
-        'email',
-        'telephone',
-        'password',
-        'actif',
-        'metadata',
-    ];
-
-    protected $hidden = [
-        'password',
-    ];
-
-    protected $casts = [
-        'password' => 'hashed',
-        'actif' => 'boolean',
-        'metadata' => 'array',
-    ];
-
-    /**
-     * Relation vers User (polymorphique).
-     */
     public function user()
     {
-        return $this->morphOne(User::class, 'userable');
+        return $this->belongsTo(User::class);
     }
 }

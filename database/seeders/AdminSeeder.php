@@ -9,6 +9,11 @@ class AdminSeeder extends Seeder
 {
     public function run(): void
     {
-        Admin::factory()->count(3)->create();
+        // Crée 3 admins liés à un user
+        \App\Models\User::factory()->count(3)->create()->each(function ($user) {
+            \App\Models\Admin::factory()->create([
+                'user_id' => $user->id,
+            ]);
+        });
     }
 }

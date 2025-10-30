@@ -9,6 +9,11 @@ class ClientSeeder extends Seeder
 {
     public function run(): void
     {
-        Client::factory()->count(10)->create();
+        // Crée 10 clients liés à un user
+        \App\Models\User::factory()->count(10)->create()->each(function ($user) {
+            \App\Models\Client::factory()->create([
+                'user_id' => $user->id,
+            ]);
+        });
     }
 }

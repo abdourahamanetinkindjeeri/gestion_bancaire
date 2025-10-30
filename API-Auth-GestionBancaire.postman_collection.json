@@ -1,0 +1,128 @@
+{
+    "info": {
+        "_postman_id": "b1e2c3d4-0000-0000-0000-000000000001",
+        "name": "API Auth Gestion Bancaire",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "description": "Collection Postman pour tester l'authentification OAuth2/JWT (Passport) du projet Gestion Bancaire."
+    },
+    "item": [
+        {
+            "name": "Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Content-Type", "value": "application/json" }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"admin@local.test\",\n  \"password\": \"password\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/api/v1/auth/login",
+                            "host": ["{{base_url}}"],
+                            "path": ["api", "v1", "auth", "login"]
+                        }
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "// Récupère access_token et refresh_token de la réponse et les stocke dans les variables d'environnement Postman",
+                                    "if (pm.response.code === 200) {",
+                                    "    var json = pm.response.json();",
+                                    "    if (json.data && json.data.access_token) {",
+                                    "        pm.environment.set('access_token', json.data.access_token);",
+                                    "    }",
+                                    "    if (json.data && json.data.refresh_token) {",
+                                    "        pm.environment.set('refresh_token', json.data.refresh_token);",
+                                    "    }",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ]
+        },
+        {
+            "name": "Refresh Token",
+            "request": {
+                "method": "POST",
+                "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+                },
+                "url": {
+                    "raw": "{{base_url}}/api/v1/auth/refresh",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "v1", "auth", "refresh"]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Logout",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}"
+                    },
+                    { "key": "Content-Type", "value": "application/json" }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/api/v1/auth/logout",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "v1", "auth", "logout"]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Dashboard Admin (protégé)",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/api/v1/admin/dashboard",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "v1", "admin", "dashboard"]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "Dashboard Client (protégé)",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{access_token}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{base_url}}/api/v1/client/dashboard",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "v1", "client", "dashboard"]
+                }
+            },
+            "response": []
+        }
+    ],
+    "variable": [
+        { "key": "base_url", "value": "http://localhost" },
+        { "key": "access_token", "value": "" },
+        { "key": "refresh_token", "value": "" }
+    ]
+}

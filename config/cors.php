@@ -83,8 +83,9 @@ return [
     // ⚠️ Pour supports_credentials=true, ne jamais mettre '*' !
     'allowed_origins' => [
         'http://localhost:8080',        // Swagger UI local
-        'http://127.0.0.1:8000',       // Laravel local
-        'https://jeeri.onrender.com',   // Production
+        'http://localhost:3000',        // Front local (React/Vue/Autre)
+        'http://127.0.0.1:8000',        // Laravel local
+        'http://localhost:8000',        // Laravel local
     ],
 
     // Expressions régulières pour les origines (laisser vide si non utilisé)

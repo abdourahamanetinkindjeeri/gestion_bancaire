@@ -13,14 +13,7 @@ class AdminFactory extends Factory
     public function definition(): array
     {
         return [
-            'id' => $this->faker->uuid(),
-            'nom' => $this->faker->lastName(),
-            'prenom' => $this->faker->firstName(),
-            'email' => $this->faker->unique()->safeEmail(),
-            'telephone' => $this->faker->unique()->regexify('7[05678][0-9]{7}'),
-            'password' => bcrypt('password'),
-            'actif' => $this->faker->boolean(90),
-            'metadata' => null,
+            'user_id' => null, // à renseigner dans le seeder
         ];
     }
 }

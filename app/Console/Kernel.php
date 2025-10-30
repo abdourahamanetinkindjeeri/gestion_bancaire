@@ -16,14 +16,14 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             Artisan::call('archive:sync');
         })
-            ->dailyAt('15:10')
+            ->dailyAt('03:15')
             ->name('archivage-comptes-bloques')
             ->withoutOverlapping();
 
         $schedule->call(function () {
             Artisan::call('desarchive:sync');
         })
-            ->dailyAt('15:10')
+            ->dailyAt('03:06')
             ->name('archivage-comptes-bloques')
             ->withoutOverlapping();
 
@@ -31,13 +31,13 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             VerifierBlocageJob::dispatch()->onQueue('archivage');
         })
-            ->dailyAt('15:10')
+            ->dailyAt('03:06')
             ->name('verification-blocages')
             ->withoutOverlapping();
 
         $schedule->call(function () {
             VerifierDeblocageJob::dispatch()->onQueue(('desarchivage'))
-                ->dailyAt('16:10')
+                ->dailyAt('03:06')
                 ->name('verification-deblocages')
                 ->withoutOverlapping();;
         });

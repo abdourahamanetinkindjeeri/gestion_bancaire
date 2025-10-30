@@ -24,6 +24,18 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+
+        // Limite personnalisée : 1000 requêtes/heure par user
+        RateLimiter::for('user', function (Request $request) {
+            return Limit::perHour(1000)->by(optional($request->user())->id ?: $request->ip());
+        });
+
+        // Limite personnalisée : 100 requêtes/minute par IP
+        RateLimiter::for('ip', function (Request $request) {
+            return Limit::perMinute(100)->by($request->ip());
+        });
+
+        // Limite par défaut API (peut rester pour fallback)
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });

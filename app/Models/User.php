@@ -2,69 +2,28 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
+use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, Notifiable, HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'role',
-    ];
+    public $incrementing = false;
+    protected $keyType = 'string';
+    protected $fillable = ['name', 'email', 'password'];
+    protected $hidden = ['password', 'remember_token'];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-    ];
-
-    /**
-     * Vérifie si l'utilisateur est un admin.
-     */
-    public function isAdmin(): bool
+    public function admin()
     {
-        return $this->role === 'admin';
+        return $this->hasOne(Admin::class);
     }
 
-    /**
-     * Vérifie si l'utilisateur est un client.
-     */
-    public function isClient(): bool
+    public function client()
     {
-        return $this->role === 'client';
-    }
-
-    /**
-     * Relation polymorphique vers Admin ou Client.
-     */
-    public function userable()
-    {
-        return $this->morphTo();
+        return $this->hasOne(Client::class);
     }
 }
