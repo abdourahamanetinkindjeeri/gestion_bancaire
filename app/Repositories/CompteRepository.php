@@ -85,11 +85,57 @@ class CompteRepository extends BaseRepository
         $uuidPattern = '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i';
 
         if (preg_match($uuidPattern, $numeroOrId)) {
-            // C'est un UUID, rechercher par ID
-            return $this->model->where('id', $numeroOrId)->first();
+            // C'est un UUID, rechercher par ID dans PostgreSQL
+            $compte = $this->model->where('id', $numeroOrId)->first();
+            if ($compte) {
+                return $compte;
+            }
+            // Si pas trouvé dans PostgreSQL, chercher dans Neon
+            return $this->findInNeonById($numeroOrId);
         } else {
-            // Ce n'est pas un UUID, rechercher par numéro de compte
-            return $this->model->where('numero_compte', $numeroOrId)->first();
+            // Ce n'est pas un UUID, rechercher par numéro de compte dans PostgreSQL
+            $compte = $this->model->where('numero_compte', $numeroOrId)->first();
+            if ($compte) {
+                return $compte;
+            }
+            // Si pas trouvé dans PostgreSQL, chercher dans Neon
+            return $this->findInNeonByNumero($numeroOrId);
         }
+    }
+
+    /**
+     * Chercher un compte dans Neon par ID
+     */
+    private function findInNeonById(string $id): ?Compte
+    {
+        $result = DB::connection('neon')
+            ->table('comptes_bloque')
+            ->where('id', $id)
+            ->first();
+
+        if ($result) {
+            // Convertir en modèle Compte
+            return new Compte((array) $result);
+        }
+
+        return null;
+    }
+
+    /**
+     * Chercher un compte dans Neon par numéro
+     */
+    private function findInNeonByNumero(string $numero): ?Compte
+    {
+        $result = DB::connection('neon')
+            ->table('comptes_bloque')
+            ->where('numero_compte', $numero)
+            ->first();
+
+        if ($result) {
+            // Convertir en modèle Compte
+            return new Compte((array) $result);
+        }
+
+        return null;
     }
 }

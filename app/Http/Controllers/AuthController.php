@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Http\Requests\Auth\LoginRequest;
 use App\Services\AuthService;
 use App\Traits\ApiResponser;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 /**
  * @OA\Tag(
@@ -18,7 +18,7 @@ class AuthController extends Controller
 {
     use ApiResponser;
 
-    protected $authService;
+    protected AuthService $authService;
 
     public function __construct(AuthService $authService)
     {
@@ -47,8 +47,8 @@ class AuthController extends Controller
      *             @OA\Property(property="status", type="string", example="success"),
      *             @OA\Property(property="message", type="string", example="Connexion réussie"),
      *             @OA\Property(property="data", type="object",
-     *                 @OA\Property(property="access_token", type="string", example="eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."),
-     *                 @OA\Property(property="refresh_token", type="string", example="eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."),
+     *                 @OA\Property(property="access_token", type="string"),
+     *                 @OA\Property(property="refresh_token", type="string"),
      *                 @OA\Property(property="token_type", type="string", example="Bearer"),
      *                 @OA\Property(property="expires_in", type="integer", example=3600),
      *                 @OA\Property(property="role", type="string", example="admin")
@@ -78,15 +78,24 @@ class AuthController extends Controller
     {
         $credentials = $request->validated();
         $result = $this->authService->login($credentials);
+
         if (!$result['success']) {
-            return $this->error($result['message'] ?? 'Identifiants invalides', 401);
+            return $this->errorResponse(
+                $result['message'] ?? 'Identifiants invalides',
+                Response::HTTP_UNAUTHORIZED
+            );
         }
-        return $this->success($result['message'] ?? 'Connexion réussie', $result['data']);
+
+        return $this->successResponse(
+            $result['data'],
+            $result['message'] ?? 'Connexion réussie',
+            Response::HTTP_OK
+        );
     }
 
     /**
      * @OA\Post(
-     *     path="/auth/refresh",
+     *     path="/v1/auth/refresh",
      *     summary="Rafraîchir le token d'accès",
      *     description="Rafraîchit le token d'accès à partir du refresh token",
      *     operationId="refreshToken",
@@ -96,12 +105,12 @@ class AuthController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             required={"refresh_token"},
-     *             @OA\Property(property="refresh_token", type="string", example="eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...")
+     *             @OA\Property(property="refresh_token", type="string", example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Token rafraîchi",
+     *         description="Token rafraîchi avec succès",
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="success"),
      *             @OA\Property(property="message", type="string", example="Token rafraîchi"),
@@ -122,15 +131,24 @@ class AuthController extends Controller
     {
         $refreshToken = $request->input('refresh_token');
         $result = $this->authService->refresh($refreshToken);
+
         if (!$result['success']) {
-            return $this->error($result['message'] ?? 'Refresh token invalide', 401);
+            return $this->errorResponse(
+                $result['message'] ?? 'Refresh token invalide',
+                Response::HTTP_UNAUTHORIZED
+            );
         }
-        return $this->success($result['message'] ?? 'Token rafraîchi', $result['data']);
+
+        return $this->successResponse(
+            $result['data'],
+            $result['message'] ?? 'Token rafraîchi',
+            Response::HTTP_OK
+        );
     }
 
     /**
      * @OA\Post(
-     *     path="/auth/logout",
+     *     path="/v1/auth/logout",
      *     summary="Déconnexion utilisateur",
      *     description="Révoque les tokens de l'utilisateur connecté",
      *     operationId="logout",
@@ -157,6 +175,11 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $this->authService->logout($request->user());
-        return $this->success('Déconnexion réussie');
+
+        return $this->successResponse(
+            null,
+            'Déconnexion réussie',
+            Response::HTTP_OK
+        );
     }
 }

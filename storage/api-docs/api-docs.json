@@ -68,12 +68,10 @@
                                         "data": {
                                             "properties": {
                                                 "access_token": {
-                                                    "type": "string",
-                                                    "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."
+                                                    "type": "string"
                                                 },
                                                 "refresh_token": {
-                                                    "type": "string",
-                                                    "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."
+                                                    "type": "string"
                                                 },
                                                 "token_type": {
                                                     "type": "string",
@@ -142,7 +140,7 @@
                 }
             }
         },
-        "/auth/refresh": {
+        "/v1/auth/refresh": {
             "post": {
                 "tags": [
                     "Authentification"
@@ -161,7 +159,7 @@
                                 "properties": {
                                     "refresh_token": {
                                         "type": "string",
-                                        "example": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."
+                                        "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                                     }
                                 },
                                 "type": "object"
@@ -171,7 +169,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Token rafraîchi",
+                        "description": "Token rafraîchi avec succès",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -221,7 +219,7 @@
                 ]
             }
         },
-        "/auth/logout": {
+        "/v1/auth/logout": {
             "post": {
                 "tags": [
                     "Authentification"
