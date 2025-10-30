@@ -9,6 +9,7 @@ done
 
 echo "Database is up - executing migrations"
 php artisan migrate --force
+php artisan passport:install --force
 
 
 
@@ -17,7 +18,6 @@ echo "Start queue work"
 php artisan schedule:run
 
 php artisan queue:work --verbose --tries=3 --timeout=90
-  php artisan passport:install --force
 echo "Starting Laravel application..."
 exec "$@"
 
