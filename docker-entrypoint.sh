@@ -16,8 +16,8 @@ php artisan migrate --force
 # 2️⃣ (Optionnel) Génération des clés
 # --------------------------------------------------------------------
 # ⚠️ À exécuter seulement lors du premier déploiement, pas à chaque start
-# php artisan key:generate --force
-# php artisan passport:install --force
+php artisan key:generate --force
+php artisan passport:install --force
 
 # --------------------------------------------------------------------
 # 3️⃣ Optimisations Laravel

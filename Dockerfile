@@ -43,21 +43,24 @@ RUN echo "APP_NAME=Laravel" > .env && \
     echo "APP_ENV=production" >> .env && \
     echo "APP_KEY=" >> .env && \
     echo "APP_DEBUG=false" >> .env && \
-    echo "APP_URL=http://localhost" >> .env && \
+    echo "APP_URL=https://gestion-bancaire.onrender.com" >> .env && \
     echo "" >> .env && \
     echo "LOG_CHANNEL=stack" >> .env && \
     echo "LOG_LEVEL=error" >> .env && \
     echo "" >> .env && \
     echo "DB_CONNECTION=pgsql" >> .env && \
-    echo "DB_HOST=dpg-d3t4u7ili9vc73donn00-a.frankfurt-postgres.render.com" >> .env && \
-    echo "DB_PORT=5432" >> .env && \
-    echo "DB_DATABASE=banking_bzaz" >> .env && \
-    echo "DB_USERNAME=banking_bzaz_user" >> .env && \
-    echo "DB_PASSWORD=y9xvw9YO6zyRpHnQVayywOtGeTSFoqX6" >> .env && \
+    echo "DB_HOST=\${DB_HOST}" >> .env && \
+    echo "DB_PORT=\${DB_PORT}" >> .env && \
+    echo "DB_DATABASE=\${DB_DATABASE}" >> .env && \
+    echo "DB_USERNAME=\${DB_USERNAME}" >> .env && \
+    echo "DB_PASSWORD=\${DB_PASSWORD}" >> .env && \
     echo "" >> .env && \
-    echo "CACHE_DRIVER=file" >> .env && \
-    echo "SESSION_DRIVER=file" >> .env && \
-    echo "QUEUE_CONNECTION=sync" >> .env
+    echo "CACHE_DRIVER=redis" >> .env && \
+    echo "SESSION_DRIVER=redis" >> .env && \
+    echo "QUEUE_CONNECTION=database" >> .env && \
+    echo "REDIS_HOST=\${REDIS_HOST}" >> .env && \
+    echo "REDIS_PORT=\${REDIS_PORT}" >> .env && \
+    echo "REDIS_PASSWORD=\${REDIS_PASSWORD}" >> .env
 
 # Changer les permissions du fichier .env pour l'utilisateur laravel
 RUN chown laravel:laravel .env
