@@ -70,6 +70,9 @@ RUN php artisan key:generate --force && \
     php artisan view:cache
 USER root
 
+COPY storage/oauth-public.key storage/
+COPY storage/oauth-private.key storage/
+
 # Copier le script d'entrée
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh

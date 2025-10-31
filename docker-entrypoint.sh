@@ -12,17 +12,6 @@ done
 echo "Database is up - executing migrations"
 php artisan migrate --force
 
-# --------------------------------------------------------------------
-# 2️⃣ (Optionnel) Génération des clés
-# --------------------------------------------------------------------
-# ⚠️ À exécuter seulement lors du premier déploiement, pas à chaque start
-php artisan key:generate --force
-php artisan passport:install --force
-
-php artisan migrate --force
-php artisan passport:keys --force
-php-fpm
-
 
 # --------------------------------------------------------------------
 # 3️⃣ Optimisations Laravel
