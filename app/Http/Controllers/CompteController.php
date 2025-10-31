@@ -21,7 +21,7 @@ use Symfony\Component\HttpFoundation\Response;
  * )
  *
  * @OA\Server(
- * url="https://jeeri.onrender.com/tinkin",
+ * url="https://tinkin-jeeri-chue.onrender.com/tinkin",
  * description="Serveur de production"
  * )
  * @OA\Server(
