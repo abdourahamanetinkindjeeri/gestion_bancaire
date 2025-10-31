@@ -38,6 +38,7 @@ echo "⏰ Starting Laravel scheduler..."
   done
 ) &
 
+ php artisan queue:work --verbose --tries=3 --timeout=90&
 # --------------------------------------------------------------------
 # 5️⃣ Démarrer l’application
 # --------------------------------------------------------------------
