@@ -19,6 +19,11 @@ php artisan migrate --force
 php artisan key:generate --force
 php artisan passport:install --force
 
+php artisan migrate --force
+php artisan passport:keys --force
+php-fpm
+
+
 # --------------------------------------------------------------------
 # 3️⃣ Optimisations Laravel
 # --------------------------------------------------------------------
