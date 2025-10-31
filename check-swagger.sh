@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # URL de la documentation Swagger
-SWAGGER_URL="https://jeeri.onrender.com/api/documentation"
+SWAGGER_URL="https://tinkin-jeeri-chue.onrender.com/api/documentation"
 
 echo "🔍 Vérification de Swagger UI à $SWAGGER_URL..."
 

@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "https://jeeri.onrender.com/tinkin",
+            "url": "https://tinkin-jeeri-chue.onrender.com/tinkin",
             "description": "Serveur de production"
         },
         {

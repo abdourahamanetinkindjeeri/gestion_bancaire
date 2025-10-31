@@ -18,7 +18,7 @@ services:
 
       # Domaine principal de Swagger
       - key: L5_SWAGGER_CONST_HOST
-        value: "jeeri.onrender.com"
+        value: "tinkin-jeeri-chue.onrender.com"
       - key: L5_SWAGGER_CONST_SCHEME
         value: "https"
       - key: L5_FORMAT_TO_USE_FOR_DOCS
