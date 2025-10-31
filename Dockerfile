@@ -35,8 +35,8 @@ RUN mkdir -p storage/framework/{cache,data,sessions,testing,views} \
     && chown -R laravel:laravel /var/www/html \
     && chmod -R 775 storage bootstrap/cache
 
-COPY storage/oauth-private.key storage/
-COPY storage/oauth-public.key storage/
+# COPY storage/oauth-private.key storage/
+# COPY storage/oauth-public.key storage/
 
 # Créer un fichier .env minimal pour le build
 RUN echo "APP_NAME=Laravel" > .env && \
