@@ -10,8 +10,14 @@ while ! pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USERNAME"; do
 done
 
 echo "Database is up - executing migrations"
-php artisan migrate --force
 
+# Générer les clés OAuth si elles n'existent pas
+if [ ! -f storage/oauth-private.key ] || [ ! -f storage/oauth-public.key ]; then
+  echo "🔐 Generating OAuth keys..."
+  php artisan passport:keys --force
+fi
+
+php artisan migrate --force
 
 # --------------------------------------------------------------------
 # 3️⃣ Optimisations Laravel
