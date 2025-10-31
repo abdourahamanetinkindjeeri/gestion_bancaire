@@ -55,12 +55,9 @@ RUN echo "APP_NAME=Laravel" > .env && \
     echo "DB_USERNAME=\${DB_USERNAME}" >> .env && \
     echo "DB_PASSWORD=\${DB_PASSWORD}" >> .env && \
     echo "" >> .env && \
-    echo "CACHE_DRIVER=redis" >> .env && \
-    echo "SESSION_DRIVER=redis" >> .env && \
-    echo "QUEUE_CONNECTION=database" >> .env && \
-    echo "REDIS_HOST=\${REDIS_HOST}" >> .env && \
-    echo "REDIS_PORT=\${REDIS_PORT}" >> .env && \
-    echo "REDIS_PASSWORD=\${REDIS_PASSWORD}" >> .env
+    echo "CACHE_DRIVER=file" >> .env && \
+    echo "SESSION_DRIVER=file" >> .env && \
+    echo "QUEUE_CONNECTION=database" >> .env
 
 # Changer les permissions du fichier .env pour l'utilisateur laravel
 RUN chown laravel:laravel .env
