@@ -42,7 +42,7 @@ RUN mkdir -p storage/framework/{cache,data,sessions,testing,views} \
 RUN echo "APP_NAME=Laravel" > .env && \
     echo "APP_ENV=production" >> .env && \
     echo "APP_KEY=" >> .env && \
-    echo "APP_DEBUG=false" >> .env && \
+    echo "APP_DEBUG=true" >> .env && \
     echo "APP_URL=https://tinkin-jeeri-chue.onrender.com" >> .env && \
     echo "" >> .env && \
     echo "LOG_CHANNEL=stack" >> .env && \
