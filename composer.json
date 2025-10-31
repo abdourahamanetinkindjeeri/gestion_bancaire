@@ -12,6 +12,7 @@
         "laravel/passport": "^12.4",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
+        "predis/predis": "^2.0",
         "twilio/sdk": "^8.8"
     },
     "require-dev": {

@@ -14,7 +14,7 @@ FROM php:8.3-fpm-alpine
 
 # Installer les extensions PHP nécessaires
 RUN apk add --no-cache postgresql-dev \
-    && docker-php-ext-install pdo pdo_pgsql
+    && docker-php-ext-install pdo pdo_pgsql redis
 
 # Créer un utilisateur non-root
 RUN addgroup -g 1000 laravel && adduser -G laravel -g laravel -s /bin/sh -D laravel
