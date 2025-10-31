@@ -38,26 +38,26 @@ services:
         value: database
       - key: REDIS_HOST
         fromService:
-          type: redis
+          type: keyvalue
           name: banking-redis
           property: host
       - key: REDIS_PORT
         fromService:
-          type: redis
+          type: keyvalue
           name: banking-redis
           property: port
       - key: REDIS_PASSWORD
         fromService:
-          type: redis
+          type: keyvalue
           name: banking-redis
           property: password
 
-  - type: pgsql
+  - type: keyvalue
     name: banking-db
     plan: starter
     ipAllowList: []
 
-  - type: redis
+  - type: keyvalue
     name: banking-redis
     ipAllowList: []
     plan: starter
