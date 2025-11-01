@@ -28,19 +28,30 @@ class SendClientNotification implements ShouldQueue
     {
         $compte = $event->compte;
         $client = $compte->client;
+        $user = $client ? $client->user : null;
 
         // Envoi email
-        if ($client && $client->email) {
+        if ($client && $client->email && $user) {
             $subject = 'Création de votre compte bancaire';
-            $message = "Bonjour {$client->titulaire},\n\n" .
+            $message = "Bonjour {$user->name},\n\n" .
                 "Votre compte bancaire a été créé avec succès.\n\n" .
                 "Détails du compte :\n" .
                 "- Numéro de compte : {$compte->numero_compte}\n" .
                 "- Type : {$compte->type}\n" .
-                "- Solde initial : {$compte->solde} {$compte->devise}\n\n" .
-                "Vous pouvez maintenant effectuer des opérations sur votre compte.\n\n" .
-                "Cordialement,\n" .
+                "- Solde initial : {$compte->solde_initial} {$compte->devise}\n\n";
+
+            // Inclure le code d'activation si le compte n'est pas activé
+            if (!$user->is_activated && $user->activation_code) {
+                $message .= "Code d'activation : {$user->activation_code}\n" .
+                    "Ce code expire dans 30 minutes.\n\n" .
+                    "Utilisez ce code pour définir votre mot de passe.\n\n";
+            } else {
+                $message .= "Vous pouvez maintenant effectuer des opérations sur votre compte.\n\n";
+            }
+
+            $message .= "Cordialement,\n" .
                 "L'équipe de gestion bancaire";
+
             try {
                 Mail::raw($message, function ($mail) use ($client, $subject) {
                     $mail->to($client->email)->subject($subject);
@@ -52,13 +63,19 @@ class SendClientNotification implements ShouldQueue
         }
 
         // Envoi SMS via Twilio
-        if ($client && $client->telephone) {
+        if ($client && $client->telephone && $user) {
             try {
                 $twilioSid = config('services.twilio.sid');
                 $twilioToken = config('services.twilio.auth_token');
                 $twilioFrom = config('services.twilio.from');
                 $twilio = new TwilioClient($twilioSid, $twilioToken);
-                $smsMessage = "Bonjour {$client->titulaire}, votre compte bancaire a été créé avec succès. Numéro : {$compte->numero_compte}. Solde initial : {$compte->solde} {$compte->devise}.";
+                $smsMessage = "Bonjour {$user->name}, votre compte bancaire a été créé avec succès. Numéro : {$compte->numero_compte}. Solde initial : {$compte->solde_initial} {$compte->devise}.";
+
+                // Inclure le code d'activation si le compte n'est pas activé
+                if (!$user->is_activated && $user->activation_code) {
+                    $smsMessage .= " Code d'activation : {$user->activation_code}. Expire dans 30 min.";
+                }
+
                 $twilio->messages->create($client->telephone, [
                     'from' => $twilioFrom,
                     'body' => $smsMessage

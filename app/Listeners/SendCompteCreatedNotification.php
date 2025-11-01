@@ -45,11 +45,18 @@ class SendCompteCreatedNotification implements ShouldQueue
         Log::info($client);
         // Envoi de SMS via Twilio
         if ($user->telephone) {
+            $smsMessage = "Bonjour {$user->name}, votre compte {$compte->numero_compte} a été créé avec succès.";
+
+            // Inclure le code d'activation si le compte n'est pas activé
+            if (!$user->is_activated && $user->activation_code) {
+                $smsMessage .= " Code d'activation : {$user->activation_code}. Expire dans 30 min.";
+            }
+
             $twilioService = app(\App\Services\Notifications\TwilioNotificationService::class);
             $smsResponse = $twilioService->send(
                 '+221' . $user->telephone, // Format international pour le Sénégal
                 null,
-                "Bonjour {$user->name}, votre compte {$compte->numero_compte} a été créé avec succès."
+                $smsMessage
             );
         } else {
             Log::warning("Aucun numéro de téléphone pour l'utilisateur {$user->id}");
@@ -61,11 +68,22 @@ class SendCompteCreatedNotification implements ShouldQueue
         }
 
         // Envoi d'email via Mail
+        $emailMessage = "Bonjour {$user->name},\n\nVotre compte bancaire {$compte->numero_compte} a été créé avec succès.\n\nType de compte: {$compte->type}\nSolde initial: {$compte->solde_initial} {$compte->devise}\n\n";
+
+        // Inclure le code d'activation si le compte n'est pas activé
+        if (!$user->is_activated && $user->activation_code) {
+            $emailMessage .= "Code d'activation : {$user->activation_code}\n" .
+                "Ce code expire dans 30 minutes.\n\n" .
+                "Utilisez ce code pour définir votre mot de passe.\n\n";
+        }
+
+        $emailMessage .= "Cordialement,\nL'équipe bancaire";
+
         $mailService = app(\App\Services\Notifications\MailNotificationService::class);
         $emailResponse = $mailService->send(
             $user->email,
             'Création de compte',
-            "Bonjour {$user->name},\n\nVotre compte bancaire {$compte->numero_compte} a été créé avec succès.\n\nType de compte: {$compte->type}\nSolde initial: {$compte->solde_initial} {$compte->devise}\n\nCordialement,\nL'équipe bancaire"
+            $emailMessage
         );
 
         if (!$emailResponse->success) {
