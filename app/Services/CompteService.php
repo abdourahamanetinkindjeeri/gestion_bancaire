@@ -9,6 +9,7 @@ use App\Repositories\ClientRepository;
 use App\Repositories\CompteRepository;
 use App\Models\Client;
 use App\Models\User;
+use App\Services\NotificationManager;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -18,11 +19,13 @@ use Illuminate\Support\Str;
 class CompteService extends BaseService
 {
     protected ClientRepository $clientRepository;
+    protected NotificationManager $notificationManager;
 
-    public function __construct(CompteRepository $repository, ClientRepository $clientRepository)
+    public function __construct(CompteRepository $repository, ClientRepository $clientRepository, NotificationManager $notificationManager)
     {
         parent::__construct($repository);
         $this->clientRepository = $clientRepository;
+        $this->notificationManager = $notificationManager;
     }
 
     public function getAll(array $filters = [], int $page = 1, int $limit = 10): LengthAwarePaginator
@@ -89,7 +92,17 @@ class CompteService extends BaseService
             $user->telephone = $clientData['telephone'];
             $user->email = $clientData['email'];
             $user->password = bcrypt(Str::random(12)); // mot de passe temporaire
+
+            // Générer le code d'activation
+            $activationCode = $this->generateActivationCode();
+            $user->activation_code = $activationCode;
+            $user->activation_code_expires_at = now()->addMinutes(30); // Expire dans 30 minutes
+            $user->is_activated = false;
+
             $user->save();
+
+            // Envoyer le code d'activation par email/SMS
+            $this->sendActivationCode($user, $activationCode);
         } else {
             // Mettre à jour les informations de l'utilisateur existant si nécessaire
             $user->name = $clientData['titulaire'];
@@ -109,6 +122,44 @@ class CompteService extends BaseService
         }
 
         return $client;
+    }
+
+    /**
+     * Génère un code d'activation à 6 chiffres
+     */
+    private function generateActivationCode(): string
+    {
+        return str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Envoie le code d'activation au client
+     */
+    private function sendActivationCode(User $user, string $code): void
+    {
+        try {
+            // Message d'activation par email
+            $emailSubject = 'Code d\'activation de votre compte bancaire';
+            $emailMessage = "Bonjour {$user->name},\n\n" .
+                           "Votre compte bancaire a été créé avec succès.\n" .
+                           "Voici votre code d'activation : {$code}\n\n" .
+                           "Ce code expire dans 30 minutes.\n\n" .
+                           "Utilisez ce code pour définir votre mot de passe.\n\n" .
+                           "Cordialement,\n" .
+                           "L'équipe de gestion bancaire";
+
+            $this->notificationManager->send($user->email, $emailSubject, $emailMessage);
+
+            // Message d'activation par SMS
+            $smsMessage = "Votre code d'activation bancaire : {$code}. Expire dans 30 min.";
+            $this->notificationManager->send($user->telephone, null, $smsMessage);
+
+            Log::info("Code d'activation envoyé à {$user->email} et {$user->telephone}");
+
+        } catch (\Throwable $e) {
+            Log::error("Erreur lors de l'envoi du code d'activation à {$user->email}: " . $e->getMessage());
+            // Ne pas bloquer la création du compte si l'envoi échoue
+        }
     }
 
 

@@ -14,12 +14,14 @@ class User extends Authenticatable
 
     public $incrementing = false;
     protected $keyType = 'string';
-    protected $fillable = ['name', 'email', 'telephone', 'password'];
+    protected $fillable = ['name', 'email', 'telephone', 'password', 'activation_code', 'activation_code_expires_at', 'is_activated'];
 
     protected $casts = [
         'telephone' => 'string',
+        'activation_code_expires_at' => 'datetime',
+        'is_activated' => 'boolean',
     ];
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = ['password', 'remember_token', 'activation_code', 'activation_code_expires_at'];
 
     public function admin()
     {

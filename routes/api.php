@@ -22,6 +22,7 @@ use App\Http\Controllers\ClientController;
 Route::group(['prefix' => 'v1'], function () {
     // Auth
     Route::post('auth/login', [AuthController::class, 'login']);
+    Route::post('auth/define-password', [AuthController::class, 'definePassword']);
     Route::post('auth/refresh', [AuthController::class, 'refresh']);
     Route::post('auth/logout', [AuthController::class, 'logout'])->middleware('auth:api');
 
@@ -50,7 +51,7 @@ Route::group(['prefix' => 'v1'], function () {
         });
 
         Route::middleware('scope:client:write,admin:write')->group(function () {
-            // Ajouter les routes d'écriture pour les clients si nécessaire
+            Route::put('clients/me', [ClientController::class, 'updateMe'])->name('clients.update_me');
         });
 
         // Routes pour les transactions - accessibles aux clients et admins

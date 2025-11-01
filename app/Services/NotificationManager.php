@@ -13,7 +13,7 @@ class NotificationManager
         $this->notifier = $notifier;
     }
 
-    public function send(string $to, string $subject, string $message): \App\Http\Resources\NotificationResponse
+    public function send(string $to, ?string $subject, string $message): \App\Http\Resources\NotificationResponse
     {
         return $this->notifier->send($to, $subject, $message);
     }

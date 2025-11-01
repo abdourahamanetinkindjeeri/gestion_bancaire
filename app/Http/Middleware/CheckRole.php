@@ -19,7 +19,11 @@ class CheckRole
         $user = Auth::user();
 
         if (!$user || $user->role !== $role) {
-            return response()->json(['error' => 'Accès non autorisé'], 403);
+            return response()->json([
+                'status' => 'error',
+                'http_code' => 403,
+                'message' => 'Accès refusé'
+            ], 403);
         }
 
         return $next($request);

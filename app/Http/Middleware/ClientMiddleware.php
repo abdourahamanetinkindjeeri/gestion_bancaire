@@ -10,7 +10,11 @@ class ClientMiddleware
     public function handle(Request $request, Closure $next)
     {
         if (!$request->user() || !$request->user()->client) {
-            return response()->json(['message' => 'Accès refusé (client uniquement)'], 403);
+            return response()->json([
+                'status' => 'error',
+                'http_code' => 403,
+                'message' => 'Accès refusé (client uniquement)'
+            ], 403);
         }
         return $next($request);
     }

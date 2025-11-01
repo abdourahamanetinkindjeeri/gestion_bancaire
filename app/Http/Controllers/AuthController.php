@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\DefinePasswordRequest;
 use App\Services\AuthService;
 use App\Traits\ApiResponser;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * @OA\Tag(
@@ -42,7 +45,7 @@ class AuthController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             required={"email","password"},
-     *             @OA\Property(property="email", type="string", format="email", example="hector69@example.com"),
+     *             @OA\Property(property="email", type="string", format="email", example="jquitzon@example.org"),
      *             @OA\Property(property="password", type="string", format="password", example="password")
      *         )
      *     ),
@@ -223,5 +226,98 @@ class AuthController extends Controller
         $response->withCookie(cookie()->forget('refresh_token'));
 
         return $response;
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/v1/auth/define-password",
+     *     summary="Définir le mot de passe avec code d'activation",
+     *     description="Permet à un utilisateur de définir son mot de passe en utilisant le code d'activation reçu",
+     *     operationId="definePassword",
+     *     tags={"Authentification"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email","code","password","password_confirmation"},
+     *             @OA\Property(property="email", type="string", format="email", example="client@example.com"),
+     *             @OA\Property(property="code", type="string", example="123456"),
+     *             @OA\Property(property="password", type="string", format="password", example="newpassword123"),
+     *             @OA\Property(property="password_confirmation", type="string", example="newpassword123")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Mot de passe défini avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Mot de passe défini avec succès. Vous pouvez maintenant vous connecter."),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Code invalide ou expiré",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Code d'activation invalide ou expiré")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Erreur de validation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="message", type="string", example="Les données fournies sont invalides"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     )
+     * )
+     */
+    public function definePassword(DefinePasswordRequest $request)
+    {
+        $validatedData = $request->validated();
+
+        // Trouver l'utilisateur par email
+        $user = User::where('email', $validatedData['email'])->first();
+
+        if (!$user) {
+            return $this->errorResponse(
+                'Utilisateur introuvable',
+                Response::HTTP_NOT_FOUND
+            );
+        }
+
+        // Vérifier le code d'activation
+        if ($user->activation_code !== $validatedData['code']) {
+            return $this->errorResponse(
+                'Code d\'activation invalide',
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+        // Vérifier si le code n'est pas expiré
+        if ($user->activation_code_expires_at && $user->activation_code_expires_at->isPast()) {
+            return $this->errorResponse(
+                'Code d\'activation expiré',
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+        // Mettre à jour le mot de passe et activer le compte
+        $user->update([
+            'password' => Hash::make($validatedData['password']),
+            'activation_code' => null,
+            'activation_code_expires_at' => null,
+            'is_activated' => true,
+        ]);
+
+        return $this->successResponse(
+            [
+                'email' => $user->email,
+                'activated_at' => now()->toISOString(),
+            ],
+            'Mot de passe défini avec succès. Vous pouvez maintenant vous connecter.',
+            Response::HTTP_OK
+        );
     }
 }

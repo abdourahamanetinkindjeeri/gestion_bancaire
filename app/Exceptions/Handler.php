@@ -35,6 +35,15 @@ class Handler extends ExceptionHandler
     {
         // Pour les requêtes API, retourner une réponse JSON formatée
         if ($request->is('api/*') || $request->expectsJson()) {
+            if ($exception instanceof \Illuminate\Auth\AuthenticationException) {
+                $response = [
+                    'status'    => 'error',
+                    'http_code' => 401,
+                    'message'   => 'Authentification requise',
+                ];
+                return response()->json($response, 401);
+            }
+
             if ($exception instanceof \Illuminate\Validation\ValidationException) {
                 $response = [
                     'status'    => 'error',
