@@ -27,12 +27,43 @@ Route::group(['prefix' => 'v1'], function () {
 
     // Routes publiques (inchangées)
     Route::get('comptes/archives', [CompteController::class, 'getComptesAllArchived'])->name('comptes.archives');
-    Route::apiResource('comptes', CompteController::class);
-    Route::post('comptes/{compte}/bloquer', [CompteController::class, 'bloquer'])->name('comptes.bloquer');
-    Route::get('comptes/{id}/details', [CompteController::class, 'showDetails']);
-    Route::get('clients/{numeroOrId}', [ClientController::class, 'showByNumeroOrId'])->name('clients.show_by_numero_or_id');
 
-    // Routes protégées
+    // Routes protégées par authentification et scopes
+    Route::middleware(['auth:api'])->group(function () {
+        // Routes pour les comptes - accessibles aux clients et admins
+        Route::middleware('scope:compte:read')->group(function () {
+            Route::get('comptes', [CompteController::class, 'index']);
+            Route::get('comptes/{compte}', [CompteController::class, 'show']);
+            Route::get('comptes/{id}/details', [CompteController::class, 'showDetails']);
+        });
+
+        Route::middleware('scope:compte:write,admin:write')->group(function () {
+            Route::post('comptes', [CompteController::class, 'store']);
+            Route::put('comptes/{compte}', [CompteController::class, 'update']);
+            Route::delete('comptes/{compte}', [CompteController::class, 'destroy']);
+            Route::post('comptes/{compte}/bloquer', [CompteController::class, 'bloquer'])->name('comptes.bloquer');
+        });
+
+        // Routes pour les clients - accessibles aux clients et admins
+        Route::middleware('scope:client:read,admin:read')->group(function () {
+            Route::get('clients/{numeroOrId}', [ClientController::class, 'showByNumeroOrId'])->name('clients.show_by_numero_or_id');
+        });
+
+        Route::middleware('scope:client:write,admin:write')->group(function () {
+            // Ajouter les routes d'écriture pour les clients si nécessaire
+        });
+
+        // Routes pour les transactions - accessibles aux clients et admins
+        Route::middleware('scope:transaction:read,admin:read')->group(function () {
+            // Ajouter les routes de lecture pour les transactions
+        });
+
+        Route::middleware('scope:transaction:write,admin:write')->group(function () {
+            // Ajouter les routes d'écriture pour les transactions
+        });
+    });
+
+    // Routes protégées avec throttling
     Route::middleware(['auth:api', 'throttle:user', 'throttle:ip'])->group(function () {
         Route::middleware('admin')->group(function () {
             // Exemples de routes admin protégées

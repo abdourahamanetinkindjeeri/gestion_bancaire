@@ -24,12 +24,12 @@ class ClientController extends Controller
     }
 
     /**
-     * @OA\Get(
+     *     @OA\Get(
      *     path="/v1/clients/{numeroOrId}",
      *     tags={"Clients"},
      *     summary="Récupérer un client par numéro de téléphone, email, NCI ou ID",
      *     description="Récupère les détails d'un client bancaire par son numéro de téléphone, email, numéro NCI ou ID",
-     *     security={{"bearerAuth":{}}},
+     *     security={{"bearerAuth": {"client:read"}}},
      *     @OA\Parameter(
      *         name="numeroOrId",
      *         in="path",

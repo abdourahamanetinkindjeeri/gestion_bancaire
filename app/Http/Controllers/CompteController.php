@@ -62,6 +62,7 @@ class CompteController extends Controller
      *     @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
      *     @OA\Parameter(name="sort", in="query", @OA\Schema(type="string", default="id")),
      *     @OA\Parameter(name="order", in="query", @OA\Schema(type="string", enum={"asc", "desc"}, default="desc")),
+     *     security={{"bearerAuth": {"compte:read"}}},
      *     @OA\Response(
      *         response=200,
      *         description="Liste des comptes récupérée avec succès",
@@ -84,6 +85,11 @@ class CompteController extends Controller
         $filters = $request->all();
         $page = (int) $request->get('page', 1);
         $limit = (int) $request->get('limit', 10);
+
+        // Si l'utilisateur est un client, filtrer uniquement ses comptes
+        if ($request->user() && $request->user()->client) {
+            $filters['client_id'] = $request->user()->client->id;
+        }
 
         $comptes = $this->compteService->getAll($filters, $page, $limit);
 
@@ -154,11 +160,12 @@ class CompteController extends Controller
     }
 
     /**
-     * @OA\Post(
+     *     @OA\Post(
      *     path="/v1/comptes",
      *     tags={"Comptes"},
      *     summary="Créer un nouveau compte",
      *     description="Crée un nouveau compte bancaire avec un client. Si le client n'existe pas, il est créé automatiquement.",
+     *     security={{"bearerAuth": {"compte:write"}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -219,12 +226,12 @@ class CompteController extends Controller
     }
 
     /**
-     * @OA\Get(
+     *     @OA\Get(
      *     path="/v1/comptes/{id}",
      *     tags={"Comptes"},
      *     summary="Affiche un compte spécifique",
      *     description="Récupère les détails d'un compte par son ID",
-     *     security={{"bearerAuth":{}}},
+     *     security={{"bearerAuth": {"compte:read"}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -261,6 +268,11 @@ class CompteController extends Controller
             return $this->errorResponse("Compte introuvable", 404);
         }
 
+        // Vérifier que le client ne peut voir que ses propres comptes
+        if (request()->user() && request()->user()->client && $compte->client_id !== request()->user()->client->id) {
+            return $this->errorResponse("Accès non autorisé à ce compte", 403);
+        }
+
         return $this->successResponse(
             new CompteResource($compte, $this->clientService),
             "Compte récupéré avec succès"
@@ -268,12 +280,12 @@ class CompteController extends Controller
     }
 
     /**
-     * @OA\Put(
+     *     @OA\Put(
      *     path="/v1/comptes/{id}",
      *     tags={"Comptes"},
      *     summary="Mettre à jour un compte",
      *     description="Met à jour les informations d'un compte bancaire existant",
-     *     security={{"bearerAuth":{}}},
+     *     security={{"bearerAuth": {"compte:write"}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -342,12 +354,12 @@ class CompteController extends Controller
     }
 
     /**
-     * @OA\Post(
+     *     @OA\Post(
      *     path="/v1/comptes/{id}/bloquer",
      *     tags={"Comptes"},
      *     summary="Bloquer un compte épargne",
      *     description="Bloque un compte épargne actif pour une durée déterminée avec un motif spécifique. L'unité peut être en mois ou en jours. La date de début peut être renseignée, sinon elle sera définie automatiquement.",
-     *     security={{"bearerAuth":{}}},
+     *     security={{"bearerAuth": {"compte:write"}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -467,12 +479,12 @@ class CompteController extends Controller
     // }
 
     /**
-     * @OA\Delete(
+     *     @OA\Delete(
      *     path="/v1/comptes/{id}",
      *     tags={"Comptes"},
      *     summary="Supprimer un compte (soft delete)",
      *     description="Supprime un compte bancaire de manière logicielle. Le compte doit être actif et avoir un solde nul.",
-     *     security={{"bearerAuth":{}}},
+     *     security={{"bearerAuth": {"compte:delete"}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -528,12 +540,12 @@ class CompteController extends Controller
     }
 
     /**
-     * @OA\Get(
+     *     @OA\Get(
      *     path="/v1/comptes/{id}/details",
      *     tags={"Comptes"},
      *     summary="Détails d'un compte par numéro ou ID",
      *     description="Récupère les détails d'un compte bancaire par son numéro de compte ou son ID",
-     *     security={{"bearerAuth":{}}},
+     *     security={{"bearerAuth": {"compte:read"}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -568,6 +580,11 @@ class CompteController extends Controller
 
         if (!$compte) {
             return $this->errorResponse("Compte introuvable", 404);
+        }
+
+        // Vérifier que le client ne peut voir que ses propres comptes
+        if (request()->user() && request()->user()->client && $compte->client_id !== request()->user()->client->id) {
+            return $this->errorResponse("Accès non autorisé à ce compte", 403);
         }
 
         return $this->successResponse(

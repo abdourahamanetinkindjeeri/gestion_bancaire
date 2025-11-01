@@ -84,6 +84,16 @@
                                                 "role": {
                                                     "type": "string",
                                                     "example": "admin"
+                                                },
+                                                "scopes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "example": [
+                                                        "admin:read",
+                                                        "admin:write"
+                                                    ]
                                                 }
                                             },
                                             "type": "object"
@@ -183,6 +193,32 @@
                                             "example": "Token rafraîchi"
                                         },
                                         "data": {
+                                            "properties": {
+                                                "access_token": {
+                                                    "type": "string"
+                                                },
+                                                "refresh_token": {
+                                                    "type": "string"
+                                                },
+                                                "token_type": {
+                                                    "type": "string",
+                                                    "example": "Bearer"
+                                                },
+                                                "expires_in": {
+                                                    "type": "integer",
+                                                    "example": 3600
+                                                },
+                                                "role": {
+                                                    "type": "string",
+                                                    "example": "admin"
+                                                },
+                                                "scopes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            },
                                             "type": "object"
                                         }
                                     },
@@ -350,7 +386,9 @@
                 },
                 "security": [
                     {
-                        "bearerAuth": []
+                        "bearerAuth": [
+                            "client:read"
+                        ]
                     }
                 ]
             }
@@ -460,7 +498,14 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "compte:read"
+                        ]
+                    }
+                ]
             },
             "post": {
                 "tags": [
@@ -590,7 +635,14 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "compte:write"
+                        ]
+                    }
+                ]
             }
         },
         "/v1/comptes/archives": {
@@ -776,7 +828,9 @@
                 },
                 "security": [
                     {
-                        "bearerAuth": []
+                        "bearerAuth": [
+                            "compte:read"
+                        ]
                     }
                 ]
             },
@@ -926,7 +980,9 @@
                 },
                 "security": [
                     {
-                        "bearerAuth": []
+                        "bearerAuth": [
+                            "compte:write"
+                        ]
                     }
                 ]
             },
@@ -1027,7 +1083,9 @@
                 },
                 "security": [
                     {
-                        "bearerAuth": []
+                        "bearerAuth": [
+                            "compte:delete"
+                        ]
                     }
                 ]
             }
@@ -1173,7 +1231,9 @@
                 },
                 "security": [
                     {
-                        "bearerAuth": []
+                        "bearerAuth": [
+                            "compte:write"
+                        ]
                     }
                 ]
             }
@@ -1252,7 +1312,9 @@
                 },
                 "security": [
                     {
-                        "bearerAuth": []
+                        "bearerAuth": [
+                            "compte:read"
+                        ]
                     }
                 ]
             }
@@ -1347,6 +1409,13 @@
                     }
                 },
                 "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
             }
         }
     },

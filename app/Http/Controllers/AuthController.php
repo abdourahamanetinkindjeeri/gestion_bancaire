@@ -13,6 +13,12 @@ use Illuminate\Http\Response;
  *     name="Authentification",
  *     description="Endpoints d'authentification utilisateur"
  * )
+ * @OA\SecurityScheme(
+ *     securityScheme="bearerAuth",
+ *     type="http",
+ *     scheme="bearer",
+ *     bearerFormat="JWT"
+ * )
  */
 class AuthController extends Controller
 {
@@ -51,7 +57,8 @@ class AuthController extends Controller
      *                 @OA\Property(property="refresh_token", type="string"),
      *                 @OA\Property(property="token_type", type="string", example="Bearer"),
      *                 @OA\Property(property="expires_in", type="integer", example=3600),
-     *                 @OA\Property(property="role", type="string", example="admin")
+     *                 @OA\Property(property="role", type="string", example="admin"),
+     *                 @OA\Property(property="scopes", type="array", @OA\Items(type="string"), example={"admin:read", "admin:write"})
      *             )
      *         )
      *     ),
@@ -131,7 +138,14 @@ class AuthController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="status", type="string", example="success"),
      *             @OA\Property(property="message", type="string", example="Token rafraîchi"),
-     *             @OA\Property(property="data", type="object")
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="access_token", type="string"),
+     *                 @OA\Property(property="refresh_token", type="string"),
+     *                 @OA\Property(property="token_type", type="string", example="Bearer"),
+     *                 @OA\Property(property="expires_in", type="integer", example=3600),
+     *                 @OA\Property(property="role", type="string", example="admin"),
+     *                 @OA\Property(property="scopes", type="array", @OA\Items(type="string"))
+     *             )
      *         )
      *     ),
      *     @OA\Response(
