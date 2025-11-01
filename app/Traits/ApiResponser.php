@@ -40,7 +40,24 @@ trait ApiResponser
     }
 
     /**
-     * 🔄 Méthode générique pour renvoyer une réponse personnalisée
+     * 🚫 Réponse standardisée pour accès refusé
+     */
+    protected function deniedResponse(
+        string $message = "Accès refusé",
+        int $code = Response::HTTP_FORBIDDEN,
+        mixed $errors = null
+    ): JsonResponse {
+        $response = $this->formatResponse(ResponseStatus::ECHEC, null, $message, $code);
+        if (!is_null($errors)) {
+            $data = $response->getData(true);
+            $data['errors'] = $errors;
+            return response()->json($data, $code);
+        }
+        return $response;
+    }
+
+    /**
+     * � Méthode générique pour renvoyer une réponse personnalisée
      */
     protected function sendResponse(
         mixed $data,
