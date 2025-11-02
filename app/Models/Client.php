@@ -19,4 +19,9 @@ class Client extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function comptes()
+    {
+        return $this->hasMany(Compte::class);
+    }
 }

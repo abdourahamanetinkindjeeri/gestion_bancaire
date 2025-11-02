@@ -182,7 +182,9 @@ class TransactionController extends Controller
 
             // Vérifier que l'utilisateur peut voir les transactions de ce compte
             $user = $request->user();
-            if ($user->client && !$user->client->comptes()->where('id', $compteId)->exists()) {
+
+            // Les admins peuvent voir tous les comptes
+            if (!$user->admin && $user->client && !$user->client->comptes()->where('id', $compteId)->exists()) {
                 return $this->errorResponse("Accès non autorisé à ce compte", 403);
             }
 
@@ -232,7 +234,9 @@ class TransactionController extends Controller
         try {
             // Vérifier que l'utilisateur peut voir les statistiques de ce compte
             $user = $request->user();
-            if ($user->client && !$user->client->comptes()->where('id', $compteId)->exists()) {
+
+            // Les admins peuvent voir tous les comptes
+            if (!$user->admin && $user->client && !$user->client->comptes()->where('id', $compteId)->exists()) {
                 return $this->errorResponse("Accès non autorisé à ce compte", 403);
             }
 
