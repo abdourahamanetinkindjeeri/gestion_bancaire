@@ -1783,7 +1783,87 @@
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/Transaction"
+                                                "properties": {
+                                                    "id": {
+                                                        "description": "Identifiant unique de la transaction",
+                                                        "type": "string",
+                                                        "format": "uuid"
+                                                    },
+                                                    "numero": {
+                                                        "description": "Numéro de transaction généré automatiquement",
+                                                        "type": "string"
+                                                    },
+                                                    "compte_id": {
+                                                        "description": "ID du compte associé",
+                                                        "type": "string",
+                                                        "format": "uuid"
+                                                    },
+                                                    "type": {
+                                                        "description": "Type de transaction",
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "depot",
+                                                            "retrait",
+                                                            "transfert"
+                                                        ]
+                                                    },
+                                                    "montant": {
+                                                        "description": "Montant de la transaction",
+                                                        "type": "number",
+                                                        "format": "decimal"
+                                                    },
+                                                    "devise": {
+                                                        "description": "Devise de la transaction",
+                                                        "type": "string"
+                                                    },
+                                                    "statut": {
+                                                        "description": "Statut de la transaction",
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "en_attente",
+                                                            "complete",
+                                                            "echouee"
+                                                        ]
+                                                    },
+                                                    "date_transaction": {
+                                                        "description": "Date de la transaction",
+                                                        "type": "string",
+                                                        "format": "date"
+                                                    },
+                                                    "metadata": {
+                                                        "description": "Données additionnelles",
+                                                        "type": "object",
+                                                        "nullable": true
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "compte": {
+                                                        "description": "Informations du compte associé",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "string",
+                                                                "format": "uuid"
+                                                            },
+                                                            "numero_compte": {
+                                                                "type": "string"
+                                                            },
+                                                            "type": {
+                                                                "type": "string"
+                                                            },
+                                                            "devise": {
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
                                             }
                                         },
                                         "pagination": {
@@ -1820,8 +1900,7 @@
                             "schema": {
                                 "required": [
                                     "compte_id",
-                                    "montant",
-                                    "devise"
+                                    "montant"
                                 ],
                                 "properties": {
                                     "compte_id": {
@@ -1832,10 +1911,6 @@
                                         "type": "number",
                                         "minimum": 1000,
                                         "example": 50000
-                                    },
-                                    "devise": {
-                                        "type": "string",
-                                        "example": "FCFA"
                                     },
                                     "metadata": {
                                         "type": "object",
@@ -2167,9 +2242,9 @@
                 },
                 "type": "object"
             },
-            "Transaction": {
-                "title": "Transaction",
-                "description": "Modèle représentant une transaction bancaire",
+            "TransactionResponse": {
+                "title": "TransactionResponse",
+                "description": "Réponse après création d'une transaction",
                 "properties": {
                     "id": {
                         "description": "Identifiant unique de la transaction",
@@ -2177,7 +2252,7 @@
                         "format": "uuid"
                     },
                     "numero": {
-                        "description": "Numéro de transaction généré automatiquement",
+                        "description": "Numéro de transaction généré",
                         "type": "string"
                     },
                     "compte_id": {
@@ -2190,7 +2265,8 @@
                         "type": "string",
                         "enum": [
                             "depot",
-                            "retrait"
+                            "retrait",
+                            "transfert"
                         ]
                     },
                     "montant": {
@@ -2200,18 +2276,21 @@
                     },
                     "devise": {
                         "description": "Devise de la transaction",
-                        "type": "string",
-                        "example": "FCFA"
+                        "type": "string"
                     },
                     "statut": {
                         "description": "Statut de la transaction",
                         "type": "string",
-                        "example": "complete"
+                        "enum": [
+                            "en_attente",
+                            "complete",
+                            "echouee"
+                        ]
                     },
                     "date_transaction": {
-                        "description": "Date et heure de la transaction",
+                        "description": "Date de la transaction",
                         "type": "string",
-                        "format": "date-time"
+                        "format": "date"
                     },
                     "metadata": {
                         "description": "Données additionnelles",
@@ -2239,7 +2318,13 @@
                             "type": {
                                 "type": "string"
                             },
+                            "solde_initial": {
+                                "type": "number"
+                            },
                             "devise": {
+                                "type": "string"
+                            },
+                            "statut": {
                                 "type": "string"
                             }
                         },

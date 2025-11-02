@@ -58,7 +58,7 @@ class TransactionService extends BaseService
                     'compte_id' => $data['compte_id'],
                     'type' => 'depot',
                     'montant' => $data['montant'],
-                    'devise' => $data['devise'],
+                    'devise' => 'FCFA', // Devise par défaut
                     'statut' => 'complete',
                     'date_transaction' => now(),
                     'metadata' => $data['metadata'] ?? null,

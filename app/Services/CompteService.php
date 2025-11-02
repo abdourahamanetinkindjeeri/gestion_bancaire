@@ -39,12 +39,10 @@ class CompteService extends BaseService
      */
     public function getAllByUser(User $user, array $filters = [], int $page = 1, int $limit = 10): LengthAwarePaginator
     {
-        // ✅ Admin : accès à tous les comptes
         if ($user->admin) {
             return $this->repository->all($filters, $page, $limit);
         }
 
-        // ✅ Client : seulement ses comptes
         if ($user->client) {
             $filters['client_id'] = $user->client->id;
             return $this->repository->all($filters, $page, $limit);

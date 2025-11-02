@@ -24,7 +24,6 @@ class TransactionDepotRequest extends FormRequest
         return [
             'compte_id' => 'required|uuid|exists:comptes,id',
             'montant' => 'required|numeric|min:1000',
-            'devise' => 'required|string|max:10',
             'metadata' => 'nullable|array',
         ];
     }
@@ -41,9 +40,6 @@ class TransactionDepotRequest extends FormRequest
             'montant.required' => 'Le montant est obligatoire.',
             'montant.numeric' => 'Le montant doit être un nombre.',
             'montant.min' => 'Le montant minimum est de 1000.',
-            'devise.required' => 'La devise est obligatoire.',
-            'devise.string' => 'La devise doit être une chaîne de caractères.',
-            'devise.max' => 'La devise ne peut pas dépasser 10 caractères.',
         ];
     }
 }

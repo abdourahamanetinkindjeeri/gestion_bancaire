@@ -55,7 +55,25 @@ class TransactionController extends Controller
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
-     *                 @OA\Items(ref="#/components/schemas/Transaction")
+     *                 @OA\Items(
+                     @OA\Property(property="id", type="string", format="uuid", description="Identifiant unique de la transaction"),
+                     @OA\Property(property="numero", type="string", description="Numéro de transaction généré automatiquement"),
+                     @OA\Property(property="compte_id", type="string", format="uuid", description="ID du compte associé"),
+                     @OA\Property(property="type", type="string", enum={"depot", "retrait", "transfert"}, description="Type de transaction"),
+                     @OA\Property(property="montant", type="number", format="decimal", description="Montant de la transaction"),
+                     @OA\Property(property="devise", type="string", description="Devise de la transaction"),
+                     @OA\Property(property="statut", type="string", enum={"en_attente", "complete", "echouee"}, description="Statut de la transaction"),
+                     @OA\Property(property="date_transaction", type="string", format="date", description="Date de la transaction"),
+                     @OA\Property(property="metadata", type="object", nullable=true, description="Données additionnelles"),
+                     @OA\Property(property="created_at", type="string", format="date-time"),
+                     @OA\Property(property="updated_at", type="string", format="date-time"),
+                     @OA\Property(property="compte", type="object", description="Informations du compte associé",
+                         @OA\Property(property="id", type="string", format="uuid"),
+                         @OA\Property(property="numero_compte", type="string"),
+                         @OA\Property(property="type", type="string"),
+                         @OA\Property(property="devise", type="string")
+                     )
+                 )
      *             ),
      *             @OA\Property(property="pagination", ref="#/components/schemas/Pagination")
      *         )
@@ -98,10 +116,10 @@ class TransactionController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"compte_id","montant","devise"},
+     *             required={"compte_id","montant"},
      *             @OA\Property(property="compte_id", type="string", example="uuid-compte"),
      *             @OA\Property(property="montant", type="number", minimum=1000, example=50000),
-     *             @OA\Property(property="devise", type="string", example="FCFA"),
+     *
      *             @OA\Property(property="metadata", type="object", example={"description": "Dépôt initial"})
      *         )
      *     ),
