@@ -34,6 +34,26 @@ class CompteService extends BaseService
         return $this->repository->all($filters, $page, $limit);
     }
 
+    /**
+     * Retourne la liste des comptes selon le rôle de l’utilisateur.
+     */
+    public function getAllByUser(User $user, array $filters = [], int $page = 1, int $limit = 10): LengthAwarePaginator
+    {
+        // ✅ Admin : accès à tous les comptes
+        if ($user->admin) {
+            return $this->repository->all($filters, $page, $limit);
+        }
+
+        // ✅ Client : seulement ses comptes
+        if ($user->client) {
+            $filters['client_id'] = $user->client->id;
+            return $this->repository->all($filters, $page, $limit);
+        }
+
+        // 🚫 Autres rôles : accès interdit
+        abort(403, "Accès non autorisé");
+    }
+
 
     /**
      * Récupère tous les comptes actifs
@@ -141,12 +161,12 @@ class CompteService extends BaseService
             // Message d'activation par email
             $emailSubject = 'Code d\'activation de votre compte bancaire';
             $emailMessage = "Bonjour {$user->name},\n\n" .
-                           "Votre compte bancaire a été créé avec succès.\n" .
-                           "Voici votre code d'activation : {$code}\n\n" .
-                           "Ce code expire dans 30 minutes.\n\n" .
-                           "Utilisez ce code pour définir votre mot de passe.\n\n" .
-                           "Cordialement,\n" .
-                           "L'équipe de gestion bancaire";
+                "Votre compte bancaire a été créé avec succès.\n" .
+                "Voici votre code d'activation : {$code}\n\n" .
+                "Ce code expire dans 30 minutes.\n\n" .
+                "Utilisez ce code pour définir votre mot de passe.\n\n" .
+                "Cordialement,\n" .
+                "L'équipe de gestion bancaire";
 
             $this->notificationManager->send($user->email, $emailSubject, $emailMessage);
 
@@ -155,7 +175,6 @@ class CompteService extends BaseService
             $this->notificationManager->send($user->telephone, null, $smsMessage);
 
             Log::info("Code d'activation envoyé à {$user->email} et {$user->telephone}");
-
         } catch (\Throwable $e) {
             Log::error("Erreur lors de l'envoi du code d'activation à {$user->email}: " . $e->getMessage());
             // Ne pas bloquer la création du compte si l'envoi échoue

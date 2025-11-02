@@ -24,10 +24,27 @@ class CompteRepository extends BaseRepository
     {
         $query = $this->model->newQuery();
 
-        $query->where(function ($q) {
-            $q->where('type', 'cheque')
-                ->orWhere('type', 'epargne');
-        })->where('statut', 'actif');
+        // Filtrage par statut si spécifié, sinon comptes actifs par défaut
+        if (!empty($filters['statut'])) {
+            $query->where('statut', $filters['statut']);
+        } else {
+            $query->where('statut', 'actif');
+        }
+
+        // Filtrage par type si spécifié
+        if (!empty($filters['type'])) {
+            $query->where('type', $filters['type']);
+        } else {
+            $query->where(function ($q) {
+                $q->where('type', 'cheque')
+                    ->orWhere('type', 'epargne');
+            });
+        }
+
+        // Filtrage par client_id si spécifié
+        if (!empty($filters['client_id'])) {
+            $query->where('client_id', $filters['client_id']);
+        }
 
         // Recherches globales
         if (!empty($filters['search'])) {
@@ -66,10 +83,13 @@ class CompteRepository extends BaseRepository
 
         $query = DB::connection('neon')
             ->table('comptes_bloque')
+            ->when(!empty($filters['client_id']), function ($q) use ($filters) {
+                $q->where('client_id', $filters['client_id']);
+            })
             ->when(!empty($filters['search']), function ($q) use ($filters) {
                 $q->where('numero_compte', 'like', "%{$filters['search']}%")
-                    ->orWhere('type', 'like', "%{$filters['search']}%")
-                    ->orWhere('devise', 'like', "%{$filters['search']}%");
+                  ->orWhere('type', 'like', "%{$filters['search']}%")
+                  ->orWhere('devise', 'like', "%{$filters['search']}%");
             })
             ->orderBy($filters['sort'] ?? 'created_at', $filters['order'] ?? 'desc');
 

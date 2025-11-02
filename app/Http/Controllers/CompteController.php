@@ -80,24 +80,29 @@ class CompteController extends Controller
      *     )
      * )
      */
+    // App\Http\Controllers\CompteController.php
     public function index(Request $request)
     {
+        $user = $request->user();
+
+        // Vérification minimale du rôle
+        if (!$user) {
+            return $this->errorResponse("Utilisateur non authentifié", 401);
+        }
+
         $filters = $request->all();
         $page = (int) $request->get('page', 1);
         $limit = (int) $request->get('limit', 10);
 
-        // Si l'utilisateur est un client, filtrer uniquement ses comptes
-        if ($request->user() && $request->user()->client) {
-            $filters['client_id'] = $request->user()->client->id;
-        }
-
-        $comptes = $this->compteService->getAll($filters, $page, $limit);
+        // On délègue toute la logique métier au service
+        $comptes = $this->compteService->getAllByUser($user, $filters, $page, $limit);
 
         return $this->successResponse(
             $comptes,
             "Liste des comptes récupérée avec succès"
         );
     }
+
 
     /**
      * Liste des comptes non archivés
@@ -147,9 +152,22 @@ class CompteController extends Controller
 
     public function getComptesAllArchived(Request $request)
     {
+        $user = $request->user();
+
+        // Vérifier que l'utilisateur est soit un admin soit un client
+        if (!$user || (!$user->admin && !$user->client)) {
+            return $this->errorResponse("Accès non autorisé", 403);
+        }
+
         $filters = $request->all();
         $page = (int) $request->get('page', 1);
         $limit = (int) $request->get('limit', 10);
+
+        // Si l'utilisateur est un client, filtrer uniquement ses comptes archivés
+        if ($user->client) {
+            $filters['client_id'] = $user->client->id;
+        }
+        // Les admins voient tous les comptes archivés (pas de filtre client_id)
 
         $comptes = $this->compteService->getAllArchived($filters, $page, $limit);
 

@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CompteController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,28 +58,24 @@ Route::group(['prefix' => 'v1'], function () {
 
         // Routes pour les transactions - accessibles aux clients et admins
         Route::middleware('scope:transaction:read,admin:read')->group(function () {
-            // Ajouter les routes de lecture pour les transactions
+            Route::get('transactions', [TransactionController::class, 'index']);
+            Route::get('transactions/compte/{compte_id}', [TransactionController::class, 'getTransactionsByCompte']);
+            Route::get('transactions/compte/{compte_id}/statistiques', [TransactionController::class, 'getStatistiquesByCompte']);
         });
 
         Route::middleware('scope:transaction:write,admin:write')->group(function () {
-            // Ajouter les routes d'écriture pour les transactions
+            Route::post('transactions/depot', [TransactionController::class, 'depot']);
         });
     });
 
     // Routes protégées avec throttling
     Route::middleware(['auth:api', 'throttle:user', 'throttle:ip'])->group(function () {
         Route::middleware('admin')->group(function () {
-            // Exemples de routes admin protégées
-            Route::get('admin/dashboard', function () {
-                return response()->json(['message' => 'Bienvenue Admin']);
-            });
+            Route::get('admin/dashboard', [DashboardController::class, 'adminDashboard']);
             // ...autres routes admin
         });
         Route::middleware('client')->group(function () {
-            // Exemples de routes client protégées
-            Route::get('client/dashboard', function () {
-                return response()->json(['message' => 'Bienvenue Client']);
-            });
+            Route::get('client/dashboard', [DashboardController::class, 'clientDashboard']);
             // ...autres routes client
         });
     });

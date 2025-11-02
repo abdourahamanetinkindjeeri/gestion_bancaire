@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'mysql'),
+    'default' => env('DB_CONNECTION', 'pgsql'),
 
     /*
     |--------------------------------------------------------------------------
@@ -122,6 +122,19 @@ return [
             'sslmode' => 'require',
         ],
 
+        'mongodb' => [
+            'driver' => 'mongodb',
+            'dsn' => env('MONGO_URL'),
+            'host' => env('MONGOHOST'),
+            'port' => env('MONGOPORT', 27017),
+            'database' => env('MONGODB_DATABASE', 'banking_archive'),
+            'username' => env('MONGOUSER'),
+            'password' => env('MONGOPASSWORD'),
+            'options' => [
+                'database' => env('MONGODB_AUTH_DATABASE', 'admin'),
+            ],
+        ],
+
     ],
 
     /*
@@ -162,7 +175,7 @@ return [
             'host' => env('REDIS_HOST', '127.0.0.1'),
             'username' => env('REDIS_USERNAME'),
             'password' => env('REDIS_PASSWORD'),
-            'port' => env('REDIS_PORT', '6379'),
+            'port' => env('REDIS_PORT', '6380'),
             'database' => env('REDIS_DB', '0'),
         ],
 
@@ -171,7 +184,7 @@ return [
             'host' => env('REDIS_HOST', '127.0.0.1'),
             'username' => env('REDIS_USERNAME'),
             'password' => env('REDIS_PASSWORD'),
-            'port' => env('REDIS_PORT', '6379'),
+            'port' => env('REDIS_PORT', '6380'),
             'database' => env('REDIS_CACHE_DB', '1'),
         ],
 

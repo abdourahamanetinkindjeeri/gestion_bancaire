@@ -46,15 +46,20 @@ class AuthService
 
         $refreshToken = $user->createToken('RefreshToken');
 
+        // Préparer les données de base
+        $data = [
+            'access_token' => $tokenResult->accessToken,
+            'token_type' => 'Bearer',
+            'expires_in' => 3600,
+            'role' => $customClaims['role'],
+            'scopes' => $scopes,
+        ];
+
+      
+
         return [
             'success' => true,
-            'data' => [
-                'access_token' => $tokenResult->accessToken,
-                'token_type' => 'Bearer',
-                'expires_in' => 3600,
-                'role' => $customClaims['role'],
-                'scopes' => $scopes,
-            ],
+            'data' => $data,
             'refresh_token' => $refreshToken->accessToken, // Retourner séparément pour le cookie
             'message' => 'Connexion réussie'
         ];
