@@ -26,60 +26,6 @@ class TransactionController extends Controller
         $this->transactionService = $transactionService;
     }
 
-    /**
-     * Liste paginée des transactions
-     *
-     * @OA\Get(
-     *     path="/v1/transactions",
-     *     tags={"Transactions"},
-     *     summary="Liste paginée des transactions",
-     *     description="Récupère une liste paginée de toutes les transactions avec possibilité de filtrage",
-     *     @OA\Parameter(name="page", in="query", @OA\Schema(type="integer", default=1)),
-     *     @OA\Parameter(name="limit", in="query", @OA\Schema(type="integer", default=10)),
-     *     @OA\Parameter(name="type", in="query", @OA\Schema(type="string", enum={"depot", "retrait"})),
-     *     @OA\Parameter(name="statut", in="query", @OA\Schema(type="string")),
-     *     @OA\Parameter(name="devise", in="query", @OA\Schema(type="string")),
-     *     @OA\Parameter(name="date_debut", in="query", @OA\Schema(type="string", format="date")),
-     *     @OA\Parameter(name="date_fin", in="query", @OA\Schema(type="string", format="date")),
-     *     @OA\Parameter(name="search", in="query", @OA\Schema(type="string")),
-     *     @OA\Parameter(name="sort", in="query", @OA\Schema(type="string", default="date_transaction")),
-     *     @OA\Parameter(name="order", in="query", @OA\Schema(type="string", enum={"asc", "desc"}, default="desc")),
-     *     security={{"bearerAuth": {"transaction:read"}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Liste des transactions récupérée avec succès",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="http_code", type="integer", example=200),
-     *             @OA\Property(property="message", type="string", example="Liste des transactions récupérée avec succès"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(
-                     @OA\Property(property="id", type="string", format="uuid", description="Identifiant unique de la transaction"),
-                     @OA\Property(property="numero", type="string", description="Numéro de transaction généré automatiquement"),
-                     @OA\Property(property="compte_id", type="string", format="uuid", description="ID du compte associé"),
-                     @OA\Property(property="type", type="string", enum={"depot", "retrait", "transfert"}, description="Type de transaction"),
-                     @OA\Property(property="montant", type="number", format="decimal", description="Montant de la transaction"),
-                     @OA\Property(property="devise", type="string", description="Devise de la transaction"),
-                     @OA\Property(property="statut", type="string", enum={"en_attente", "complete", "echouee"}, description="Statut de la transaction"),
-                     @OA\Property(property="date_transaction", type="string", format="date", description="Date de la transaction"),
-                     @OA\Property(property="metadata", type="object", nullable=true, description="Données additionnelles"),
-                     @OA\Property(property="created_at", type="string", format="date-time"),
-                     @OA\Property(property="updated_at", type="string", format="date-time"),
-                     @OA\Property(property="compte", type="object", description="Informations du compte associé",
-                         @OA\Property(property="id", type="string", format="uuid"),
-                         @OA\Property(property="numero_compte", type="string"),
-                         @OA\Property(property="type", type="string"),
-                         @OA\Property(property="devise", type="string")
-                     )
-                 )
-     *             ),
-     *             @OA\Property(property="pagination", ref="#/components/schemas/Pagination")
-     *         )
-     *     )
-     * )
-     */
     public function index(Request $request)
     {
         $user = $request->user();
@@ -104,47 +50,7 @@ class TransactionController extends Controller
         );
     }
 
-    /**
-     * Effectuer un dépôt sur un compte
-     *
-     * @OA\Post(
-     *     path="/v1/transactions/depot",
-     *     tags={"Transactions"},
-     *     summary="Effectuer un dépôt",
-     *     description="Effectue un dépôt sur un compte bancaire",
-     *     security={{"bearerAuth": {"transaction:write"}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"compte_id","montant"},
-     *             @OA\Property(property="compte_id", type="string", example="uuid-compte"),
-     *             @OA\Property(property="montant", type="number", minimum=1000, example=50000),
-     *
-     *             @OA\Property(property="metadata", type="object", example={"description": "Dépôt initial"})
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Dépôt effectué avec succès",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="http_code", type="integer", example=201),
-     *             @OA\Property(property="message", type="string", example="Dépôt effectué avec succès"),
-     *             @OA\Property(property="data", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Erreur de validation",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(property="http_code", type="integer", example=422),
-     *             @OA\Property(property="message", type="string", example="Les données fournies ne sont pas valides"),
-     *             @OA\Property(property="errors", type="object")
-     *         )
-     *     )
-     * )
-     */
+
     public function depot(TransactionDepotRequest $request)
     {
         try {
@@ -165,32 +71,7 @@ class TransactionController extends Controller
         }
     }
 
-    /**
-     * Liste des transactions d'un compte
-     *
-     * @OA\Get(
-     *     path="/v1/transactions/compte/{compte_id}",
-     *     tags={"Transactions"},
-     *     summary="Liste des transactions d'un compte",
-     *     description="Récupère la liste des transactions d'un compte spécifique",
-     *     security={{"bearerAuth": {"transaction:read"}}},
-     *     @OA\Parameter(name="compte_id", in="path", required=true, @OA\Schema(type="string")),
-     *     @OA\Parameter(name="page", in="query", @OA\Schema(type="integer", default=1)),
-     *     @OA\Parameter(name="limit", in="query", @OA\Schema(type="integer", default=10)),
-     *     @OA\Parameter(name="type", in="query", @OA\Schema(type="string", enum={"depot", "retrait"})),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Liste des transactions récupérée avec succès",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="http_code", type="integer", example=200),
-     *             @OA\Property(property="message", type="string", example="Liste des transactions récupérée avec succès"),
-     *             @OA\Property(property="data", type="array", @OA\Items(type="object")),
-     *             @OA\Property(property="pagination", ref="#/components/schemas/Pagination")
-     *         )
-     *     )
-     * )
-     */
+
     public function getTransactionsByCompte(Request $request, string $compteId)
     {
         try {
@@ -220,33 +101,7 @@ class TransactionController extends Controller
         }
     }
 
-    /**
-     * Statistiques des transactions d'un compte
-     *
-     * @OA\Get(
-     *     path="/v1/transactions/compte/{compte_id}/statistiques",
-     *     tags={"Transactions"},
-     *     summary="Statistiques des transactions d'un compte",
-     *     description="Récupère les statistiques des transactions d'un compte spécifique",
-     *     security={{"bearerAuth": {"transaction:read"}}},
-     *     @OA\Parameter(name="compte_id", in="path", required=true, @OA\Schema(type="string")),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Statistiques récupérées avec succès",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="http_code", type="integer", example=200),
-     *             @OA\Property(property="message", type="string", example="Statistiques récupérées avec succès"),
-     *             @OA\Property(property="data", type="object",
-     *                 @OA\Property(property="total_depot", type="number", example=150000),
-     *                 @OA\Property(property="total_retrait", type="number", example=50000),
-     *                 @OA\Property(property="nombre_transactions", type="integer", example=5),
-     *                 @OA\Property(property="derniere_transaction", type="object")
-     *             )
-     *         )
-     *     )
-     * )
-     */
+    
     public function getStatistiquesByCompte(Request $request, string $compteId)
     {
         try {

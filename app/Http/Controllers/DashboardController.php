@@ -19,32 +19,7 @@ class DashboardController extends Controller
 {
     use ApiResponser;
 
-    /**
-     * Dashboard administrateur
-     *
-     * @OA\Get(
-     *     path="/v1/admin/dashboard",
-     *     tags={"Dashboard"},
-     *     summary="Dashboard administrateur",
-     *     description="Récupère toutes les informations du dashboard administrateur",
-     *     security={{"bearerAuth": {"admin:read"}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Dashboard récupéré avec succès",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="message", type="string", example="Dashboard récupéré avec succès"),
-     *             @OA\Property(property="data", type="object",
-     *                 @OA\Property(property="total_comptes", type="integer", example=150),
-     *                 @OA\Property(property="balance_totale", type="number", example=25000000),
-     *                 @OA\Property(property="nombre_transactions", type="integer", example=1200),
-     *                 @OA\Property(property="dernieres_transactions", type="array", @OA\Items(type="object")),
-     *                 @OA\Property(property="comptes_crees_aujourdhui", type="array", @OA\Items(type="object"))
-     *             )
-     *         )
-     *     )
-     * )
-     */
+
     public function adminDashboard(Request $request)
     {
         try {
@@ -135,33 +110,7 @@ class DashboardController extends Controller
         }
     }
 
-    /**
-     * Dashboard client
-     *
-     * @OA\Get(
-     *     path="/v1/client/dashboard",
-     *     tags={"Dashboard"},
-     *     summary="Dashboard client",
-     *     description="Récupère toutes les informations du dashboard client",
-     *     security={{"bearerAuth": {"client:read"}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Dashboard récupéré avec succès",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="message", type="string", example="Dashboard récupéré avec succès"),
-     *             @OA\Property(property="data", type="object",
-     *                 @OA\Property(property="nombre_comptes", type="integer", example=3),
-     *                 @OA\Property(property="balance_totale", type="number", example=1500000),
-     *                 @OA\Property(property="nombre_transactions", type="integer", example=45),
-     *                 @OA\Property(property="dernieres_transactions", type="array", @OA\Items(type="object")),
-     *                 @OA\Property(property="comptes", type="array", @OA\Items(type="object"))
-     *             )
-     *         )
-     *     )
-     * )
-     */
-    public function clientDashboard(Request $request)
+       public function clientDashboard(Request $request)
     {
         try {
             $user = $request->user();
