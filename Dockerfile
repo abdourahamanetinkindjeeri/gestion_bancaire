@@ -3,6 +3,12 @@ FROM composer:2.6 AS composer-build
 
 WORKDIR /app
 
+# Installer l'extension MongoDB nécessaire pour les dépendances
+RUN apk add --no-cache autoconf g++ make linux-headers \
+    && pecl install mongodb \
+    && docker-php-ext-enable mongodb \
+    && apk del autoconf g++ make linux-headers
+
 # Copier les fichiers de dépendances
 COPY composer.json composer.lock ./
 
