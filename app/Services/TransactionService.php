@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Transaction;
 use App\Models\Compte;
+use App\Models\User;
 use App\Repositories\TransactionRepository;
 use App\Services\NotificationManager;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -100,8 +101,8 @@ class TransactionService extends BaseService
             $client = $compte->client->user;
 
             $message = "Dépôt de " . number_format($transaction->montant, 0, ',', ' ') . " {$transaction->devise} effectué sur votre compte {$compte->numero_compte}.\n" .
-                      "Numéro de transaction: {$transaction->numero}\n" .
-                      "Date: " . $transaction->date_transaction->format('d/m/Y H:i');
+                "Numéro de transaction: {$transaction->numero}\n" .
+                "Date: " . $transaction->date_transaction->format('d/m/Y H:i');
 
             // Notification par email
             $this->notificationManager->send(
@@ -116,7 +117,6 @@ class TransactionService extends BaseService
                 null,
                 "Dépôt confirmé: " . number_format($transaction->montant, 0, ',', ' ') . " {$transaction->devise} sur {$compte->numero_compte}"
             );
-
         } catch (\Throwable $e) {
             Log::error("Erreur lors de la notification du dépôt: " . $e->getMessage());
             // Ne pas bloquer la transaction si la notification échoue
@@ -178,7 +178,6 @@ class TransactionService extends BaseService
             $collection->insertOne($data);
 
             Log::info("Transaction sauvegardée dans MongoDB: {$transaction->numero}");
-
         } catch (\Throwable $e) {
             Log::error("Erreur lors de la sauvegarde dans MongoDB: " . $e->getMessage());
             // Ne pas bloquer la transaction si la sauvegarde MongoDB échoue
@@ -206,5 +205,25 @@ class TransactionService extends BaseService
             'nombre_transactions' => $nombreTransactions,
             'derniere_transaction' => $derniereTransaction,
         ];
+    }
+
+    /**
+     * Retourne la liste des comptes selon le rôle de l’utilisateur.
+     */
+    public function getAllByUser(User $user, array $filters = [], int $page = 1, int $limit = 10): LengthAwarePaginator
+    {
+        // ✅ Admin : accès à tous les comptes
+        if ($user->admin) {
+            return $this->transactionRepository->all($filters, $page, $limit);
+        }
+
+        // ✅ Client : seulement ses comptes
+        if ($user->client) {
+            $filters['client_id'] = $user->client->id;
+            return $this->transactionRepository->all($filters, $page, $limit);
+        }
+
+        // 🚫 Autres rôles : accès interdit
+        abort(403, "Accès non autorisé");
     }
 }

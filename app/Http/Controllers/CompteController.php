@@ -86,7 +86,7 @@ class CompteController extends Controller
         $user = $request->user();
 
         // Vérification minimale du rôle
-        if (!$user) {
+        if (!$user || (!$user->admin && !$user->client)) {
             return $this->errorResponse("Utilisateur non authentifié", 401);
         }
 

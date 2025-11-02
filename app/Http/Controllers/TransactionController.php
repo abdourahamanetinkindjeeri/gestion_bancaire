@@ -75,13 +75,10 @@ class TransactionController extends Controller
         $page = (int) $request->get('page', 1);
         $limit = (int) $request->get('limit', 10);
 
-        // Si l'utilisateur est un client, filtrer uniquement ses transactions
-        if ($user->client) {
-            $filters['client_id'] = $user->client->id;
-        }
+
         // Les admins voient toutes les transactions (pas de filtre client_id)
 
-        $transactions = $this->transactionService->getAll($filters, $page, $limit);
+        $transactions = $this->transactionService->getAllByUser($user,$filters, $page, $limit);
 
         return $this->successResponse(
             $transactions,
