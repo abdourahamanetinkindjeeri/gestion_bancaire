@@ -101,7 +101,33 @@ class TransactionController extends Controller
         }
     }
 
-    
+    /**
+     * Statistiques des transactions d'un compte
+     *
+     * @OA\Get(
+     *     path="/v1/transactions/compte/{compte_id}/statistiques",
+     *     tags={"Transactions"},
+     *     summary="Statistiques des transactions d'un compte",
+     *     description="Récupère les statistiques des transactions d'un compte spécifique",
+     *     security={{"bearerAuth": {"transaction:read"}}},
+     *     @OA\Parameter(name="compte_id", in="path", required=true, @OA\Schema(type="string")),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Statistiques récupérées avec succès",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="http_code", type="integer", example=200),
+     *             @OA\Property(property="message", type="string", example="Statistiques récupérées avec succès"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="total_depot", type="number", example=150000),
+     *                 @OA\Property(property="total_retrait", type="number", example=50000),
+     *                 @OA\Property(property="nombre_transactions", type="integer", example=5),
+     *                 @OA\Property(property="derniere_transaction", type="object")
+     *             )
+     *         )
+     *     )
+     * )
+     */
     public function getStatistiquesByCompte(Request $request, string $compteId)
     {
         try {

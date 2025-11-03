@@ -1530,6 +1530,215 @@
                     }
                 ]
             }
+        },
+        "/v1/admin/dashboard": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Dashboard administrateur",
+                "description": "Récupère toutes les informations du dashboard administrateur",
+                "operationId": "4539c833bd1f7b14ddb4aba4b11a3d27",
+                "responses": {
+                    "200": {
+                        "description": "Dashboard récupéré avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Dashboard récupéré avec succès"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "total_comptes": {
+                                                    "type": "integer",
+                                                    "example": 150
+                                                },
+                                                "balance_totale": {
+                                                    "type": "number",
+                                                    "example": 25000000
+                                                },
+                                                "nombre_transactions": {
+                                                    "type": "integer",
+                                                    "example": 1200
+                                                },
+                                                "dernieres_transactions": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "comptes_crees_aujourdhui": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "admin:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/v1/client/dashboard": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Dashboard client",
+                "description": "Récupère toutes les informations du dashboard client",
+                "operationId": "eaaba2559672fb681146a5a3f3f07fa4",
+                "responses": {
+                    "200": {
+                        "description": "Dashboard récupéré avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Dashboard récupéré avec succès"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "nombre_comptes": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "balance_totale": {
+                                                    "type": "number",
+                                                    "example": 1500000
+                                                },
+                                                "nombre_transactions": {
+                                                    "type": "integer",
+                                                    "example": 45
+                                                },
+                                                "dernieres_transactions": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "comptes": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "client:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/v1/transactions/compte/{compte_id}/statistiques": {
+            "get": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Statistiques des transactions d'un compte",
+                "description": "Récupère les statistiques des transactions d'un compte spécifique",
+                "operationId": "c5af64c32e1b7ff7997f9db479180fab",
+                "parameters": [
+                    {
+                        "name": "compte_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Statistiques récupérées avec succès",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "http_code": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Statistiques récupérées avec succès"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "total_depot": {
+                                                    "type": "number",
+                                                    "example": 150000
+                                                },
+                                                "total_retrait": {
+                                                    "type": "number",
+                                                    "example": 50000
+                                                },
+                                                "nombre_transactions": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "derniere_transaction": {
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "transaction:read"
+                        ]
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -1734,6 +1943,14 @@
         {
             "name": "Comptes",
             "description": "Gestion des comptes bancaires et de leurs transactions"
+        },
+        {
+            "name": "Dashboard",
+            "description": "Tableaux de bord administrateur et client"
+        },
+        {
+            "name": "Transactions",
+            "description": "Gestion des transactions bancaires"
         }
     ]
 }

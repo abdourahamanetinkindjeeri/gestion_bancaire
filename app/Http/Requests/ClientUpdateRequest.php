@@ -24,7 +24,8 @@ class ClientUpdateRequest extends FormRequest
         $userId = auth()->id();
         return [
             'name' => 'sometimes|required|string|max:255',
-            'email' => 'sometimes|required|email|unique:users,email,' . $userId,
+            'email' => 'sometimes|required|email|unique:users,email' . $userId,
+            // 'email' => 'sometimes|required|email|unique:users,email' . $userId,
             'telephone' => 'sometimes|required|string|regex:/^[0-9]{9}$/',
         ];
     }
